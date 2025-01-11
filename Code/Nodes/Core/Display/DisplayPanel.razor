@@ -1,0 +1,13 @@
+@inherits PanelComponent
+@namespace Nodebox
+
+<root>
+	@Text
+</root>
+
+@code
+{
+	[Property] public object Value { get; set; } = "";
+	[Property, TextArea] public string Text { get => Value.ToString(); }
+	protected override int BuildHash() => System.HashCode.Combine( Value );
+}

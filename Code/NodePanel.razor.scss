@@ -1,0 +1,91 @@
+$primary-color: rgb(17, 17, 17);
+$header-color: rgba(255, 255, 255, 0.02);
+$footer-color: rgba(255, 255, 255, 0.01);
+
+NodePanel {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: $primary-color;
+	font-weight: bold;
+	border-radius: 16px;
+	overflow: hidden;
+	font-family: Poppins;
+	color: white;
+	flex-direction: column;
+
+	#header {
+		position: relative;
+		width: 100%;
+		
+		font-size: 24px;
+		height: 1.4em;
+		
+		justify-content: center;
+		align-items: center;
+
+		background-color: $header-color;
+	}
+
+	#body {
+		position: relative;
+		width: 100%;
+		flex-grow: 1;
+	}
+
+	#footer {
+		position: relative;
+		width: 100%;
+		
+		font-size: 15px;
+		height: 1.4em;
+		
+		justify-content: center;
+		align-items: center;
+
+		background-color: $footer-color;
+		color: #555;
+	}
+
+	#center {
+		position: relative;
+		width: 100%;
+	}
+
+	.pins {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		justify-content: center;
+		align-items: center;
+		font-size: 24px;
+	}
+
+	#outputs {
+		right: 0;
+	}
+
+	.dot-container {
+		justify-content: center;
+		align-items: center;
+	}
+
+	.dot {
+		height: 32px;
+		width: 32px;
+		background-color: white;
+		border: 1px gray;
+	}
+
+	.input .dot {
+		border-radius: 0px 4px 4px 0px;
+		margin-right: 4px;
+	}
+
+	.output .dot {
+		border-radius: 4px 0px 0px 4px;
+		margin-left: 4px;
+	}
+}

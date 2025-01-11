@@ -1,0 +1,46 @@
+@inherits PanelComponent
+@namespace Nodebox
+
+<root>
+	<div id="header">
+		<div id="name">@Name</div>
+	</div>
+	<div id="body">
+		<div id="inputs" class="pins">
+			@foreach ( var pin in InputPins )
+			{
+				<div class="pin input">
+					<div class="dot-container"><div class="dot"></div></div>
+					<div class="pin-name-container">@pin.Name</div>
+				</div>
+			}
+		</div>
+		<div id="center" @ref="CenterPanel"></div>
+		<div id="outputs" class="pins">
+			@foreach ( var pin in OutputPins )
+			{
+				<div class="pin output">
+					<div class="pin-name-container">@pin.Name</div>
+					<div class="dot-container"><div class="dot"></div></div>
+				</div>
+			}
+		</div>
+	</div>
+	<div id="footer">
+		<div id="groups">@GroupsConcat</div>
+	</div>
+</root>
+
+@code
+{
+	[Property, TextArea] public string Name { get; set; } = "Name";
+	[Property] public Nodebox.Node.Pin[] InputPins { get; set; }
+	[Property] public Nodebox.Node.Pin[] OutputPins { get; set; }
+	[Property] public Panel CenterPanel { get; set; }
+	[Property] public string[] Groups { get; set; }
+
+	public string GroupsConcat {
+		get => string.Join(", ", Groups);
+	}
+	protected override int BuildHash() => System.HashCode.Combine( Name, InputPins, OutputPins );
+}
