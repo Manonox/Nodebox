@@ -6,7 +6,7 @@
 		<div id="name">@Name</div>
 	</div>
 	<div id="body">
-		<div id="inputs" class="pins">
+		<div id="inputs" class="pins" @ref="InputPinPanels">
 			@foreach ( var pin in InputPins )
 			{
 				<div class="pin input">
@@ -16,7 +16,7 @@
 			}
 		</div>
 		<div id="center" @ref="CenterPanel"></div>
-		<div id="outputs" class="pins">
+		<div id="outputs" class="pins" @ref="OutputPinPanels">
 			@foreach ( var pin in OutputPins )
 			{
 				<div class="pin output">
@@ -27,19 +27,21 @@
 		</div>
 	</div>
 	<div id="footer">
-		<div id="groups">@GroupsConcat</div>
+		<div id="groups">@GroupsText</div>
 	</div>
 </root>
 
 @code
 {
 	[Property, TextArea] public string Name { get; set; } = "Name";
-	[Property] public Nodebox.Node.Pin[] InputPins { get; set; }
-	[Property] public Nodebox.Node.Pin[] OutputPins { get; set; }
-	[Property] public Panel CenterPanel { get; set; }
+	[Property] public ReadOnlyCollection<Pin> InputPins { get; set; }
+	[Property] public ReadOnlyCollection<Pin> OutputPins { get; set; }
+	public Panel CenterPanel { get; set; }
+	public Panel InputPinPanels { get; private set; }
+	public Panel OutputPinPanels { get; private set; }
 	[Property] public string[] Groups { get; set; }
 
-	public string GroupsConcat {
+	public string GroupsText {
 		get => string.Join(", ", Groups);
 	}
 	protected override int BuildHash() => System.HashCode.Combine( Name, InputPins, OutputPins );

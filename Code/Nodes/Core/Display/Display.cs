@@ -1,20 +1,21 @@
 namespace Nodebox.Nodes;
 
-public class Display : Node
+public sealed class Display : Node
 {
     public override string Name => "Display";
     public override string Desc => "Takes any input and displays it";
     public override string[] Groups => new string[] {"Core"};
 
-    public Display()
-    {
-        InputPins = new[]
-        {
+	public override (Pin[] In, Pin[] Out) InitialPins => (
+        new Pin[] {
             new Pin<object>("*")
-        };
-    }
+        },
 
-    private DisplayPanel DisplayPanel { get; set; }
+        new Pin[] {
+        }
+    );
+
+	private DisplayPanel DisplayPanel { get; set; }
 	public override void Render(GameObject go, Panel panel)
 	{
 		DisplayPanel = go.GetOrAddComponent<DisplayPanel>();

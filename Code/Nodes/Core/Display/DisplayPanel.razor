@@ -7,7 +7,7 @@
 
 @code
 {
-	[Property] public object Value { get; set; } = "";
-	[Property, TextArea] public string Text { get => Value.ToString(); }
+	[Property] public object Value { get; set; } = null;
+	[Property, TextArea] public string Text => Value?.ToString() ?? "null";
 	protected override int BuildHash() => System.HashCode.Combine( Value );
 }

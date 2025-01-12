@@ -1,6 +1,6 @@
 namespace Nodebox;
 
-public static class Util {
+public static class EnumerableExtensions {
     public static IEnumerable<(int, T)> Enumerate<T>(this IEnumerable<T> ie)
     {
         var max = ie.Count();

@@ -60,11 +60,24 @@ NodePanel {
 		bottom: 0;
 		justify-content: center;
 		align-items: center;
-		font-size: 24px;
+		font-size: 16px;
 	}
 
 	#outputs {
 		right: 0;
+	}
+
+	.pin-name-container {
+		position: relative;
+		flex-direction: column;
+	}
+
+	.output .pin-name-container {
+		flex-direction: column-reverse;
+	}
+
+	.pin-name-container label {
+		flex-shrink: 1;
 	}
 
 	.dot-container {
@@ -73,8 +86,8 @@ NodePanel {
 	}
 
 	.dot {
-		height: 32px;
-		width: 32px;
+		height: 36px;
+		width: 36px;
 		background-color: white;
 		border: 1px gray;
 	}
