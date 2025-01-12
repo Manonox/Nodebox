@@ -13,7 +13,8 @@ Inspired by **Unreal Engine's** [**Blueprints**](https://dev.epicgames.com/docum
 - Each `Node` type and their `Pin`s have some simple meta-data attached to it (Name, Desc, etc.)
 
 ## Todo
-- [x] `Wire` 3D wrapper (like Node3D)
+- [x] `Wire3D` - `Wire` 3D wrapper (like Node3D)
+- [ ] Colors for `Wire3D`s (or `Wire` in general)
 - [ ] A `Pin` type, that acts as a "pulse", which makes `Node`s work more like UE Blueprints (or Resonite's "Discrete" nodes)
 - [ ] A `Node` type collection and search functionality
 - [ ] Implement a `Node` variant code generator tool (for `Node`s like `Add<T>` (where T is float, double, VectorN, ...))
