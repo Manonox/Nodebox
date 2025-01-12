@@ -13,7 +13,7 @@ Inspired by **Unreal Engine's** [**Blueprints**](https://dev.epicgames.com/docum
 - Each `Node` type and their `Pin`s have some simple meta-data attached to it (Name, Desc, etc.)
 
 ## Todo
-- [ ] Separate `Pin` connections into a separate `GameObject`/`Component`
+- [x] `Wire` 3D wrapper (like Node3D)
 - [ ] A `Pin` type, that acts as a "pulse", which makes `Node`s work more like UE Blueprints (or Resonite's "Discrete" nodes)
 - [ ] A `Node` type collection and search functionality
 - [ ] Implement a `Node` variant code generator tool (for `Node`s like `Add<T>` (where T is float, double, VectorN, ...))
@@ -38,8 +38,8 @@ public Nodebox.Node ReadNode { get; set; }
 protected override void OnStart()
 {
     var gameTime = new Nodebox.Nodes.GameTime();
-    var square = new Nodebox.Nodes.Square();
-    gameTime.Connect(0, square, 0);
+    var square = new Nodebox.Nodes.Square<float>();
+    var wire = new Nodebox.Wire(gameTime, 0, square, 0);
     ReadNode = square;
 }
 
@@ -55,22 +55,19 @@ protected override void OnStart()
 {
     var nodes = new List<Node>() {
         new Nodebox.Nodes.GameTime(),
-        new Nodebox.Nodes.Square(),
+        new Nodebox.Nodes.Square<float>(),
         new Nodebox.Nodes.Display(),
     };
 
-    var y = 0f;
-    nodes.ForEach((x) => {
-        var go = new GameObject();
-        var node3d = go.AddComponent<Node3D>();
-        node3d.Node = x;
-        go.WorldPosition = new Vector3(80, y, 50);
+    var gos = nodes.Enumerate().Select((pair) => {
+        var (index, x) = pair;
+        var go = Node3D.Wrap(x);
+        go.WorldPosition = new Vector3(80f, -index * 30f, 50f);
         go.WorldRotation = Rotation.FromYaw(180f);
-        y -= 30f;
-    });
+        return go;
+    }).ToList();
 
-    nodes[0].Connect(0, nodes[1], 0);
-    nodes[1].Connect(0, nodes[2], 0);
-    nodes[2].GetOutput<float>(0);
+    Wire3D.Connect(gos[0], 0, gos[1], 0);
+    Wire3D.Connect(gos[1], 0, gos[2], 0);
 }
 ```
