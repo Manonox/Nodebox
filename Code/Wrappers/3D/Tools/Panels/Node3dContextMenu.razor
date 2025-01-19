@@ -1,0 +1,40 @@
+@inherits PanelComponent
+@namespace Nodebox
+
+<root>
+    <ul id="list" @ref="List">
+    @foreach (var entry in Entries)
+    {
+        <li>
+            <Node3dContextMenuButton Entry=@entry/>
+        </li>
+    }
+    </ul>
+</root>
+
+@code
+{
+    public struct Entry( string name, string icon, Action action ) {
+        public string Name { get; set; } = name;
+        public string Icon { get; set; } = icon;
+        public Action Action { get; set; } = action;
+    }
+
+    public List<Entry> Entries { get; set; }
+
+    public Panel List { get; set; }
+        
+    protected override void OnTreeBuilt() {
+        foreach (var item in Entries.Enumerate()) {
+            var (index, entry) = item;
+            var angle = 360f * index / Entries.Count;
+            var offset = Vector2.FromDegrees(angle) * 200f;
+            var listItem = List.GetChild(index);
+
+            listItem.Style.Left = offset.x;
+            listItem.Style.Top = offset.y;
+        }
+    }
+
+	protected override int BuildHash() => System.HashCode.Combine( Entries );
+}

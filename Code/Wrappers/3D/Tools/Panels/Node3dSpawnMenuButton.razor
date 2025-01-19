@@ -1,0 +1,17 @@
+@namespace Nodebox
+
+<button style="@(Entry.Generics.Count > 0 ? $"color: {Entry.Generics[0].GetColor().Rgb}" : "")">
+    @Entry.Name
+</button>
+
+@code
+{
+    public Library.Entry Entry { get; set; }
+
+    protected override int BuildHash() => System.HashCode.Combine( Entry );
+
+    protected override void OnClick(MousePanelEvent e) {
+        var node3dTool = (Node3dTool)FindRootPanel().GetChild(0).UserData;
+        node3dTool.OnNodeSpawnRequested(Entry);
+    }
+}

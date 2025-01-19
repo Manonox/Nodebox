@@ -1,0 +1,20 @@
+@namespace Nodebox
+@inherits Button
+
+@code
+{
+    private Node3dContextMenu.Entry _entry;
+    public Node3dContextMenu.Entry Entry { get => _entry; set {
+        _entry = value;
+        Text = value.Name;
+        Icon = value.Icon;
+    } }
+
+    protected override void OnClick(MousePanelEvent e) {
+        base.OnClick(e);
+
+        var node3dTool = (Node3dTool)FindRootPanel().GetChild(0).UserData;
+        //Assert.NotNull(node3dTool.ContextMenuTarget, "huh");
+        Entry.Action();
+    }
+}

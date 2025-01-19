@@ -1,0 +1,81 @@
+@inherits PanelComponent
+@namespace Nodebox
+
+<root>
+	<div id="header">
+		<div id="name">@Node.Name</div>
+	</div>
+	<div id="body">
+		<div id="inputs" class="pins" style="justify-content: @(CenteredPins ? "center" : "flex-start");" @ref="InputPinPanels">
+			@foreach ( var pin in Node.InputPins )
+			{
+				<div class="pin input">
+					<div class="pin-container"><PinButton/></div>
+					<div class="pin-name-container">@pin.Name</div>
+				</div>
+			}
+		</div>
+		<div id="center" @ref="CenterPanel"></div>
+		<div id="outputs" class="pins" style="justify-content: @(CenteredPins ? "center" : "flex-start");"  @ref="OutputPinPanels">
+			@foreach ( var pin in Node.OutputPins )
+			{
+				<div class="pin output">
+					<div class="pin-name-container">@pin.Name</div>
+					<div class="pin-container"><PinButton IsOutput=@true/></div>
+				</div>
+			}
+		</div>
+	</div>
+	<div id="footer">
+		<div id="groups">@GroupsText</div>
+	</div>
+</root>
+
+@code
+{
+	public WeakReference<Node> NodeRef { get; set; }
+	public Node Node { get {
+		NodeRef.TryGetTarget(out var x);
+		return x;
+	} }
+
+	public Panel CenterPanel { get; set; }
+	public Panel InputPinPanels { get; private set; }
+	public Panel OutputPinPanels { get; private set; }
+
+
+	private bool CenteredPins => Node.InputPins.Count <= 1 & Node.OutputPins.Count <= 1;
+
+	protected override void OnTreeBuilt() {
+		foreach (var item in GetAllPinButtons()) {
+			var (pinButton, pin, _, index) = item;
+			pinButton.Index = index;
+			pinButton.Style.BackgroundColor = pin.GetColor();
+		}
+	}
+
+	@* protected override void OnTreeFirstBuilt() {
+		foreach (var item in GetAllPinButtons()) {
+			var (pinButton, _) = item;
+			pinButton.AddEventListener("onclick", (e) => {
+				
+			});
+		}
+	} *@
+
+	public IEnumerable<(PinButton PinButton, Pin Pin, PinType PinType, int Index)> GetPinButtons(bool outputs = false) {
+		var pinParentPanel = outputs ? OutputPinPanels : InputPinPanels;
+		var pins = outputs ? Node.OutputPins : Node.InputPins;
+		var dotIndex = outputs ? 1 : 0;
+		foreach ( (int index, Panel pinPanel) in pinParentPanel.Children.Enumerate() ) {
+			var pin = pins[index];
+			var pinButton = (PinButton)(pinPanel.GetChild(dotIndex).GetChild(0));
+			yield return (pinButton, pin, outputs ? PinType.Output : PinType.Input, index);
+		}
+	}
+
+	public IEnumerable<(PinButton PinButton, Pin Pin, PinType PinType, int Index)> GetAllPinButtons() => GetPinButtons(true).Concat(GetPinButtons());
+
+	public string GroupsText => string.Join(", ", Node.Groups);
+	protected override int BuildHash() => System.HashCode.Combine( Node );
+}

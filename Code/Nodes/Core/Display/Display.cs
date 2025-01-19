@@ -1,6 +1,8 @@
 namespace Nodebox.Nodes;
 
-public sealed class Display : Node
+
+[RegisterNode]
+public class Display : Node
 {
     public override string Name => "Display";
     public override string Desc => "Takes any input and displays it";
@@ -8,7 +10,7 @@ public sealed class Display : Node
 
 	public override (Pin[] In, Pin[] Out) InitialPins => (
         new Pin[] {
-            new Pin<object>("*")
+            Pin.New<object>("*")
         },
 
         new Pin[] {
@@ -21,5 +23,7 @@ public sealed class Display : Node
 		DisplayPanel = go.GetOrAddComponent<DisplayPanel>();
         DisplayPanel.Panel.Parent = panel;
         DisplayPanel.Value = GetInput<object>(0);
+        DisplayPanel.FitText = true;
+        DisplayPanel.StateHasChanged();
 	}
 }

@@ -1,0 +1,43 @@
+Node3dContextMenu {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	padding: 1%;
+
+	font-family: Poppins;
+	color: white;
+	
+	text-shadow: 2px 2px 10px black;
+
+	pointer-events: all;
+	transition: all 0.1s ease-out;
+
+	align-items: center;
+	justify-content: center;
+
+	&:intro {
+		transform: scale(0.0);
+	}
+	
+	&:outro {
+		transform: scale(0.0);
+		pointer-events: none;
+	}
+
+	#list {
+		position: relative;
+		// top: 50%;
+		// left: 50%;
+		width: 0px;
+		height: 0px;
+		overflow: visible;
+	}
+
+	ul li {
+		position: relative;
+		align-items: center;
+		justify-content: center;
+	}
+}

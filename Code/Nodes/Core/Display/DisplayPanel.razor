@@ -2,12 +2,27 @@
 @namespace Nodebox
 
 <root>
-	@Text
+	<label @ref="Label">@Text</label>
 </root>
 
 @code
 {
 	[Property] public object Value { get; set; } = null;
 	[Property, TextArea] public string Text => Value?.ToString() ?? "null";
+	[Property] public bool FitText { get; set; } = false;
+	[Property] public float? FontSizeOverride { get; set; } = null;
+
+	public Panel Label { get; set; }
+
+	protected override void OnTreeBuilt() {
+		if (FontSizeOverride.HasValue) {
+			Label.Style.FontSize = FontSizeOverride.Value;
+			return;
+		}
+
+		var length = Text.Length;
+		Label.Style.FontSize = 18f * 12 / Math.Max(length, 12);
+	}
+
 	protected override int BuildHash() => System.HashCode.Combine( Value );
 }

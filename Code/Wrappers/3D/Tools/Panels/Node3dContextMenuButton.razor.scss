@@ -1,0 +1,28 @@
+Node3dContextMenuButton {
+    position: absolute;
+    
+    width: 20vh;
+    height: 20vh;
+    
+    background-color: rgba(0.1, 0.1, 0.1, 0.2);
+    border-radius: 4vh;
+    
+    cursor: pointer;
+
+    align-items: center;
+    justify-content: center;
+
+    .label {
+        position: absolute;
+        top: 17px;
+
+        align-items: center;
+        justify-content: center;
+    }
+
+    .icon {
+        position: absolute;
+        bottom: 0;
+        font-size: 9vh;
+    }
+}

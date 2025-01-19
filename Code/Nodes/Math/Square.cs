@@ -1,18 +1,26 @@
 namespace Nodebox.Nodes;
 
-public sealed class Square<T> : Node
+[RegisterNode]
+[Generics(typeof(float))]
+[Generics(typeof(double))]
+[Generics(typeof(int))]
+//[Generics(typeof(long))]
+public class Square<T> : Node
 {
-    public override string Name => "Square";
-    public override string Desc => "Takes a number X and returns it's square";
-    public override string[] Groups => new string[] { "Math", "Operator" };
+	public override Type[] Generics => [typeof(T)];
+    
+    public override string Name => $"Square<{typeof(T).GetPrettyName()}>";
+    public override string Desc => "Takes a number and multiplies it by itself";
+    public override string[] Groups => new string[] { "Math" };
+	public override Vector2 SizeMultiplier => new(0.66f, 1f);
 
-    public override (Pin[] In, Pin[] Out) InitialPins => (
+	public override (Pin[] In, Pin[] Out) InitialPins => (
         new Pin[] {
-            new Pin<T>("X")
+            Pin.New<T>("X")
         },
         
         new Pin[] {
-            new Pin<T>("X²")
+            Pin.New<T>("X²")
         }
     );
 
@@ -28,6 +36,20 @@ public sealed class Square<T> : Node
             SetOutput(0, x * x);
             return;
         }
+
+        if (typeof(T) == typeof(int)) {
+            var x = GetInput<int>(0);
+            SetOutput(0, x * x);
+            return;
+        }
+        
+        if (typeof(T) == typeof(long)) {
+            var x = GetInput<long>(0);
+            SetOutput(0, x * x);
+            return;
+        }
+
+        throw new NotImplementedException();
     }
 }
 

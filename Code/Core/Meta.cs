@@ -1,12 +1,12 @@
 namespace Nodebox;
 
 
-internal class Meta( Type type )
+public class Meta( Type type )
 {
     public Type Type { get; set; } = type;
 }
 
-internal class Meta<T>( T value ) : Meta(typeof(T))
+public class Meta<T>( T value ) : Meta(typeof(T))
 {
 	public T Value { get; set; } = value;
 }

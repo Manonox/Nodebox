@@ -1,0 +1,119 @@
+ConstantPanel
+{
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 15%;
+	bottom: 0;
+
+	font-size: 20px;
+	color: white;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	overflow: visible;
+
+	pointer-events: all;
+
+// Bool
+
+	Checkbox {
+		position: relative;
+		background-color: rgba(64, 64, 64, 0.2);
+		border-radius: 4px;
+		width: 40vh;
+		height: 40vh;
+	}
+
+	Checkbox:hover {
+		background-color: rgba(96, 96, 96, 0.2);
+	}
+	
+	Checkbox:active {
+		background-color: rgba(128, 128, 128, 0.2);
+	}
+
+	Checkbox .iconpanel {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		font-size: 40vh;
+
+		transition: transform 0.1s ease-in-out;
+		transition: opacity 0.2s ease-in-out;
+	}
+
+	Checkbox .iconpanel:active {
+		transform: scale(1.2);
+	}
+
+	Checkbox:not(.checked) .iconpanel {
+		opacity: 0.01;
+	}
+
+
+// Float, Double, Int, Long
+
+	.textentry {
+		position: relative;
+		background-color: rgba(64, 64, 64, 0.2);
+		border-radius: 4px;
+
+		width: 80%;
+		font-size: 18px;
+		overflow: visible;
+	}
+
+	.textentry .label {
+		position: relative;
+		padding: 0px 10px;
+		flex-grow: 0;
+		flex-shrink: 0;
+		overflow: visible;
+	}
+
+// Vector types
+	#vector {
+		position: relative;
+		height: 100%;
+		width: 100%;
+		justify-content: center;
+		align-items: center;
+		flex-direction: column;
+	}
+
+	.vector {
+		margin: 2px 0px;
+	}
+
+
+	.color {
+		position: absolute;
+		right: 4px;
+		width: 8px;
+		height: 85%;
+		border-radius: 2px;
+		background: linear-gradient(45deg, rgba(64, 64, 64, 1) 25%, rgba(192, 192, 192, 1) 25%, rgba(192, 192, 192, 1) 75%, rgba(64, 64, 64, 1) 75%, rgba(64, 64, 64, 1) 100%);
+		background-repeat: repeat;
+		background-position: 0px 0px, 4px 4px;
+		background-size: 8px 8px;
+	}
+	
+	.colorstrip {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		border-radius: 2px;
+	}
+
+// Reference
+
+	.reference {
+		font-size: 12px;
+	}
+
+}

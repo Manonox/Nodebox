@@ -1,0 +1,176 @@
+@inherits PanelComponent
+@namespace Nodebox
+
+<root>
+	@if (Type == typeof(bool))
+	{
+		<Checkbox @ref="BoolCheckbox" />
+	}
+
+	@if (Type == typeof(float) || Type == typeof(double) || Type == typeof(int))
+	{
+		<TextEntry
+			Numeric=@true
+			Value=@("0")
+			Placeholder=@(Type.GetPrettyName())
+			CharacterRegex=@(Type == typeof(int) ? "[0-9\\-]" : null)
+			MaxLength=@(12)
+			@ref="DecimalTextEntry"
+			/>
+	}
+
+	@if (IsVectorType)
+	{
+		<div id="vector" @ref="VectorTypeEntriesPanel">
+			@for (int i = 0; i < VectorTypeDimensions; i++)
+			{
+				<TextEntry
+					class="vector"
+					Numeric=@true
+					Value=@(GetVectorDefault(i))
+					Placeholder=@(VectorType.GetPrettyName())
+					CharacterRegex=@(VectorType == typeof(int) ? "[0-9\\-]" : null)
+					MaxLength=@(12)
+					/>
+			}
+		</div>
+
+		@if (Type == typeof(Color))
+		{
+			<div class="color">
+				<div class="colorstrip" style="background-color: @(Color.Rgba)" @ref="ColorStripPanel"></div>
+			</div>
+		}
+	}
+	
+	@if (typeof(Reference).IsAssignableFrom(Type))
+	{
+		<label class="reference" @ref="ReferenceLabel">@Reference.ToString()</label>
+	}
+</root>
+
+@code
+{
+	public delegate void OnChangedEventHandler(ConstantPanel panel);
+	public event OnChangedEventHandler OnChanged;
+
+	protected override void OnTreeFirstBuilt() {
+		var onTextEditedHandler = (string s) => {
+			OnChanged?.Invoke(this);
+		};
+
+		if (DecimalTextEntry != null) {
+			DecimalTextEntry.OnTextEdited += onTextEditedHandler;
+		}
+
+		if (IsVectorType) {
+			for (int index = 0; index < VectorTypeDimensions; index++) {
+				var textEntry = (TextEntry)VectorTypeEntriesPanel.GetChild(index);
+				textEntry.OnTextEdited += onTextEditedHandler;
+				if (Type == typeof(Color)) {
+					textEntry.OnTextEdited += (_) => {
+						ColorStripPanel.Style.BackgroundColor = Color.Rgba;
+					};
+				}
+			}
+		}
+	}
+
+	protected override void OnTreeBuilt() {
+		OnChanged?.Invoke(this);
+	}
+
+	private Panel BoolCheckbox { get; set; }
+	public bool Bool => BoolCheckbox.HasClass("checked");
+
+	private TextEntry DecimalTextEntry { get; set; }
+	public float Float => float.TryParse(DecimalTextEntry.Value, out var result) ? result : default;
+	public double Double => double.TryParse(DecimalTextEntry.Value, out var result) ? result : default;
+	public int Int => int.TryParse(DecimalTextEntry.Value, out var result) ? result : default;
+	public long Long => long.TryParse(DecimalTextEntry.Value, out var result) ? result : default;
+	
+	private bool IsVectorType => Type.IsVectorType();
+	public Type VectorType => Type.GetVectorBaseType();
+	private int VectorTypeDimensions => Type.GetVectorTypeDimensions();
+
+	private Panel VectorTypeEntriesPanel { get; set; }
+	private Panel ColorStripPanel { get; set; }
+	private T GetVectorTextEntryValue<T>(int index) {
+		var textEntry = (TextEntry)VectorTypeEntriesPanel.GetChild(index);
+		if (typeof(T) == typeof(float)) {
+			return (T)(object)(float.TryParse(textEntry.Value, out var result) ? result : default);
+		}
+		
+		if (typeof(T) == typeof(int)) {
+			return (T)(object)(int.TryParse(textEntry.Value, out var result) ? result : default);
+		}
+
+		throw new Exception("wtf");
+	}
+
+	private string GetVectorDefault(int index) {
+		if (Type == typeof(Color))
+			return "1";
+		return "0";
+	}
+
+	public Vector2 Vector2 => new Vector2(
+		GetVectorTextEntryValue<float>(0),
+		GetVectorTextEntryValue<float>(1)
+		);
+	public Vector3 Vector3 => new Vector3(
+		GetVectorTextEntryValue<float>(0),
+		GetVectorTextEntryValue<float>(1),
+		GetVectorTextEntryValue<float>(2)
+		);
+	public Vector4 Vector4 => new Vector4(
+		GetVectorTextEntryValue<float>(0),
+		GetVectorTextEntryValue<float>(1),
+		GetVectorTextEntryValue<float>(2),
+		GetVectorTextEntryValue<float>(3)
+		);
+	
+	public Vector2Int Vector2Int => new Vector2Int(
+		GetVectorTextEntryValue<int>(0),
+		GetVectorTextEntryValue<int>(1)
+		);
+	public Vector3Int Vector3Int => new Vector3Int(
+		GetVectorTextEntryValue<int>(0),
+		GetVectorTextEntryValue<int>(1),
+		GetVectorTextEntryValue<int>(2)
+		);
+
+	public Angles Angles => new Angles(
+		GetVectorTextEntryValue<float>(0),
+		GetVectorTextEntryValue<float>(1),
+		GetVectorTextEntryValue<float>(2)
+		);
+	public Rotation Rotation => new Rotation(
+		GetVectorTextEntryValue<float>(0),
+		GetVectorTextEntryValue<float>(1),
+		GetVectorTextEntryValue<float>(2),
+		GetVectorTextEntryValue<float>(3)
+		);
+		
+	@* public Quaternion Quaternion => new Quaternion(
+		GetVectorTextEntryValue<float>(0),
+		GetVectorTextEntryValue<float>(1),
+		GetVectorTextEntryValue<float>(2),
+		GetVectorTextEntryValue<float>(3)
+		); *@
+
+	public Color Color => new Color(
+		GetVectorTextEntryValue<float>(0),
+		GetVectorTextEntryValue<float>(1),
+		GetVectorTextEntryValue<float>(2),
+		GetVectorTextEntryValue<float>(3)
+		);
+
+
+	private Panel ReferenceLabel { get; set; }
+	public Reference Reference { get; set; }
+
+
+	public Type Type { get; set; }
+	protected override int BuildHash() => System.HashCode.Combine( Type );
+}

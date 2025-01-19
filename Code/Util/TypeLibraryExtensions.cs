@@ -9,4 +9,12 @@ public static class TypeLibraryExtensions {
         Assert.True(property.PropertyType == typeof(TValue));
         return typeLibrary.SetProperty(target, property.Name, value);
     }
+
+    public static IEnumerable<TypeDescription> GetAllBaseTypes(this TypeDescription typeDescription) {
+        Assert.NotNull(typeDescription);
+        while (typeDescription != null && typeDescription.IsValid && typeDescription.TargetType != typeof(object)) {
+            yield return typeDescription;
+            typeDescription = typeDescription.BaseType;
+        }
+    }
 }

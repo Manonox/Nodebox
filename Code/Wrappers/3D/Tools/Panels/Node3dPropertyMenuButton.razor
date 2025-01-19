@@ -1,0 +1,45 @@
+@namespace Nodebox
+
+<button>
+    <label class="type" style="color: @TypeColor.Rgb">@($"{PropertyDescription.PropertyType.GetPrettyName()}")</label>
+    <label class="name">@PropertyDescription.Name</label>
+    @if (Comment.Length > 0)
+    {
+        <label class="comment">@Comment</label>
+    }
+    <label class="value">= @ValueText</label>
+</button>
+
+@code
+{
+    public object Target { get; set; }
+    public PropertyDescription PropertyDescription { get; set; }
+
+    private Color TypeColor => PropertyDescription.PropertyType.GetColor();
+    private string Comment { get {
+        if (!PropertyDescription.CanWrite)
+            return "(Read-Only)";
+        if (!PropertyDescription.CanRead)
+            return "(Write-Only..?)";
+        return "";
+    } }
+
+    private string ValueText { get {
+        if (Target == null)
+            return "???";
+        if (Target.GetType() == typeof(GameObject) && !((GameObject)Target).IsValid())
+            return "???";
+        if (Target.GetType() == typeof(Component) && !((Component)Target).IsValid())
+            return "???";
+        var obj = PropertyDescription.GetValue(Target);
+        return obj.ToString();
+    } }
+
+    protected override int BuildHash() => System.HashCode.Combine( Target, PropertyDescription, ValueText );
+
+    protected override void OnClick(MousePanelEvent e) {
+        var node3dTool = (Node3dTool)FindRootPanel().GetChild(0).UserData;
+        node3dTool.PropertyMenuTargetComponent = Target;
+        node3dTool.OpenContextMenu(PropertyDescription);
+    }
+}

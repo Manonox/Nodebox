@@ -2,7 +2,7 @@ $primary-color: rgb(17, 17, 17);
 $header-color: rgba(255, 255, 255, 0.02);
 $footer-color: rgba(255, 255, 255, 0.01);
 
-NodePanel {
+Node3dPanel {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -15,13 +15,14 @@ NodePanel {
 	font-family: Poppins;
 	color: white;
 	flex-direction: column;
+	pointer-events: all;
 
 	#header {
 		position: relative;
 		width: 100%;
 		
-		font-size: 24px;
-		height: 1.4em;
+		font-size: 14px;
+		height: 24px;
 		
 		justify-content: center;
 		align-items: center;
@@ -52,19 +53,30 @@ NodePanel {
 	#center {
 		position: relative;
 		width: 100%;
+		pointer-events: none;
 	}
 
 	.pins {
 		position: absolute;
 		top: 0;
 		bottom: 0;
-		justify-content: center;
-		align-items: center;
-		font-size: 16px;
+		justify-content: flex-start;
+		margin: 8px 0px;
+		font-size: 15px;
+		flex-direction: column;
+	}
+
+	.pin {
+		margin: 4px 0px;
 	}
 
 	#outputs {
 		right: 0;
+		text-align: right;
+	}
+	
+	.pin.output {
+		justify-content: flex-end;
 	}
 
 	.pin-name-container {
@@ -72,33 +84,22 @@ NodePanel {
 		flex-direction: column;
 	}
 
+	.input .pin-name-container {
+		bottom: 5px;
+	}
+
 	.output .pin-name-container {
 		flex-direction: column-reverse;
+		top: 5px;
 	}
 
 	.pin-name-container label {
 		flex-shrink: 1;
 	}
 
-	.dot-container {
+	.pin-container {
 		justify-content: center;
 		align-items: center;
-	}
-
-	.dot {
-		height: 36px;
-		width: 36px;
-		background-color: white;
-		border: 1px gray;
-	}
-
-	.input .dot {
-		border-radius: 0px 4px 4px 0px;
-		margin-right: 4px;
-	}
-
-	.output .dot {
-		border-radius: 4px 0px 0px 4px;
-		margin-left: 4px;
+		pointer-events: all;
 	}
 }

@@ -1,0 +1,61 @@
+@inherits PanelComponent
+@namespace Nodebox
+
+<root>
+    <label id="title">Properties</label>
+    <div id="list">
+        <div class="component">GameObject</div>
+        @foreach (PropertyDescription propertyDescription in GetValidProperties(TargetGameObject))
+        {
+            <Node3dPropertyMenuButton Target=@TargetGameObject PropertyDescription=@propertyDescription/>
+        }
+        @foreach (Component component in TargetComponents)
+        {
+            <div class="component">@component.GetType().Name</div>
+            @foreach (PropertyDescription propertyDescription in GetValidProperties(component))
+            {
+                <Node3dPropertyMenuButton Target=@component PropertyDescription=@propertyDescription/>
+            }
+        }
+    </div>
+</root>
+
+@code
+{
+    public Library Library { get; set; }
+    public GameObject TargetGameObject { get; set; }
+
+    private ComponentList ComponentList => TargetGameObject.Components;
+    private IEnumerable<Component> TargetComponents => ComponentList.GetAll(FindMode.InSelf);
+    private IEnumerable<PropertyDescription> GetValidProperties(object obj) {
+        var typeDescription = TypeLibrary.GetType(obj.GetType());
+        var baseTypes = typeDescription.GetAllBaseTypes().Select(x => x.TargetType);
+        if (baseTypes.Where(x => Blacklist.Types.Contains(obj.GetType())).Any())
+            yield break;
+        var blacklist = baseTypes
+            .SelectWhere(Blacklist.Properties.GetValueOrDefault)
+            .DefaultIfEmpty()
+            .Aggregate((a, b) => {
+                var result = new HashSet<string>(a);
+                a.UnionWith(b);
+                return result;
+                });
+        var propertyDescriptions = TypeLibrary.GetPropertyDescriptions(obj).ToList();
+        propertyDescriptions.Sort((a, b) => {
+            @* var byTypeName = a.PropertyType.Name.CompareTo(b.PropertyType.Name);
+            if (byTypeName != 0) return byTypeName; *@
+            return a.Name.CompareTo(b.Name);
+        });
+        foreach (var propertyDescription in propertyDescriptions) {
+            if (!Library.AllTypes.Exists(x => x == propertyDescription.PropertyType))
+                continue;
+            if (!propertyDescription.CanRead && !propertyDescription.CanWrite)
+                continue;
+            if (blacklist != null && blacklist.Contains(propertyDescription.Name))
+                continue;
+            yield return propertyDescription;
+        }
+    }
+
+	protected override int BuildHash() => System.HashCode.Combine( TargetGameObject );
+}

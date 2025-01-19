@@ -9,17 +9,18 @@ Inspired by **Unreal Engine's** [**Blueprints**](https://dev.epicgames.com/docum
 
 - The `Node`s themselves are separate from any visual/interactive parts
 - There should be wrappers for them, which provide different visualization/interactions/functionality, etc.
-    - Currently, only `Node3D` exists, which displays the inner `Node` via a `WorldPanel` (1 node - 1 panel)
-- Each `Node` type and their `Pin`s have some simple meta-data attached to it (Name, Desc, etc.)
+    - Currently, only `Node3D` exists, which displays the inner `Node` via a `WorldPanel` (*1 `Node` = 1 `WorldPanel`*)
+- Each `Node` type and their `Pin`s have some simple metadata attached to it (Name, Desc, etc.)
 
 ## Todo
 - [x] `Wire3D` - `Wire` 3D wrapper (like Node3D)
-- [ ] Colors for `Wire3D`s (or `Wire` in general)
+- [x] Colors for `Wire3D`s (or `Wire` in general)
+- [x] A `Node` type collection
+  - [ ] Search functionality
+- [x] A tool to drag around, copy, select and delete `Node3D`s, connect/disconnect pins
+- [x] Read/Write for `Component` Property values
 - [ ] A `Pin` type, that acts as a "pulse", which makes `Node`s work more like UE Blueprints (or Resonite's "Discrete" nodes)
-- [ ] A `Node` type collection and search functionality
-- [ ] Implement a `Node` variant code generator tool (for `Node`s like `Add<T>` (where T is float, double, VectorN, ...))
-- [ ] A tool to drag around, copy, select and delete `Node3D`s, connect/disconnect pins
-- [ ] Read/Write for `Component` Property values
+- [ ] ~~Implement a `Node` variant code generator tool (for `Node`s like `Add<T>` (where T is float, double, VectorN, ...))~~
 - [ ] Figure out networking
 - [ ] Collapse/Uncollapse ([Pack/Unpack in Protoflux](https://wiki.resonite.com/ProtoFlux_Tool#Packing_ProtoFlux_nodes)) node graphs into GameObjects
 - [ ] And, ofcourse, more `Node`s 🛠️
@@ -32,24 +33,20 @@ Inspired by **Unreal Engine's** [**Blueprints**](https://dev.epicgames.com/docum
 3. Profit
 
 ## Usage
-**Simply print the time^2 to the console**
-```cs
-public Nodebox.Node ReadNode { get; set; }
+### Creating node graphs via a tool
+Put the `Node3dTool` component on your first person camera
+- Q(`menu`) opens the `Node` spawn menu
+- R(`reload`) opens the context menu on GameObjects
+  - (Property List / Destroy / Duplicate)
+- Left Mouse Button(`attack1`)
+  - Hold to drag `Node`s
+  - Click pins to create `Wire`s
+  - Double click while holding a `Wire` to spawn a `Constant<T>` or a `Display` node
+- Right Mouse Button(`attack2`)
+  - Drag left/right while holding a `Node` to rotate it on the Z axis(yaw)
+  - Click pins to disconnect all `Wire`s (if holding a `Wire` cancels/destroys it)
 
-protected override void OnStart()
-{
-    var gameTime = new Nodebox.Nodes.GameTime();
-    var square = new Nodebox.Nodes.Square<float>();
-    var wire = new Nodebox.Wire(gameTime, 0, square, 0);
-    ReadNode = square;
-}
-
-protected override void OnFixedUpdate()
-{
-    Log.Info((ReadNode, ReadNode.GetOutput<float>(0)));
-}
-```
-
+### Generated node graph example:
 **Place the GameTime->Square->Display combo with Node3D wrappers in the world**
 ```cs
 protected override void OnStart()
