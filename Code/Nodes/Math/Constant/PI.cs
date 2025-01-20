@@ -11,6 +11,7 @@ public class Pi<T> : Node
     public override string Desc => null;
     public override string[] Groups => new string[] { "Math", "Constant" };
     public override string[] Aliases => [ "Pie" ];
+	public override Vector2 SizeMultiplier => new(0.75f, 1f);
 
     public override (Pin[] In, Pin[] Out) InitialPins => (
         new Pin[] {

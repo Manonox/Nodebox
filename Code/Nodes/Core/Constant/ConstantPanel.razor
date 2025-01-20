@@ -55,6 +55,8 @@
 	public event OnChangedEventHandler OnChanged;
 
 	protected override void OnTreeFirstBuilt() {
+		Update();
+
 		var onTextEditedHandler = (string s) => {
 			OnChanged?.Invoke(this);
 		};
@@ -79,6 +81,12 @@
 	protected override void OnTreeBuilt() {
 		OnChanged?.Invoke(this);
 	}
+
+	public object _value;
+	public object Value { get => _value; set {
+		_value = value;
+		Update();
+	} }
 
 	private Panel BoolCheckbox { get; set; }
 	public bool Bool => BoolCheckbox.HasClass("checked");
@@ -106,6 +114,15 @@
 		}
 
 		throw new Exception("wtf");
+	}
+
+
+	private void Update() {
+		if (DecimalTextEntry != null) {
+			if (_value.GetType() == typeof(float)) {
+				DecimalTextEntry.Value = _value.ToString();
+			}
+		}
 	}
 
 	private string GetVectorDefault(int index) {

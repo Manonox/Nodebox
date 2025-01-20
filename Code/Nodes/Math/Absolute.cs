@@ -8,6 +8,7 @@ namespace Nodebox.Nodes;
 [Generics(typeof(Vector2))]
 [Generics(typeof(Vector3))]
 [Generics(typeof(Vector4))]
+[Generics(typeof(Color))]
 // [Generics(typeof(Vector2Int))]
 // [Generics(typeof(Vector3Int))]
 public class Absolute<T> : Node
@@ -63,6 +64,10 @@ public class Absolute<T> : Node
             SetOutput(0, GetInput<Vector4>(0).Abs());
             return;
         }
+        if (typeof(T) == typeof(Color)) {
+            SetOutput(0, GetInput<Color>(0).Abs());
+            return;
+        }
         
         if (typeof(T) == typeof(Vector2Int)) {
             SetOutput(0, GetInput<Vector2Int>(0).Abs());
@@ -71,6 +76,11 @@ public class Absolute<T> : Node
         
         if (typeof(T) == typeof(Vector3Int)) {
             SetOutput(0, GetInput<Vector3Int>(0).Abs());
+            return;
+        }
+
+        if (typeof(T) == typeof(Color)) {
+            SetOutput(0, GetInput<Color>(0).Abs());
             return;
         }
 

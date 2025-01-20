@@ -83,14 +83,14 @@ public class Library: Component {
     [Property] public bool ShouldLoadDefaults { get; set; } = true;
     public List<Entry> Entries { get; set; } = new();
 
-    public Library() {
+	protected override void OnAwake() {
         if (ShouldLoadDefaults)
             LoadDefaults();
         OnLibraryPopulate?.Invoke(this);
         Entries.Sort();
-    }
+	}
 
-    private void LoadDefaults() {
+	private void LoadDefaults() {
         static IEnumerable<List<Type>> GetCombinations(List<Type> types, int count) {
             if (count == 1) return types.Select(t => new List<Type> { t });
             return GetCombinations(types, count - 1)

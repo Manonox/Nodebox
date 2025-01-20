@@ -10,4 +10,26 @@ DisplayPanel
 	color: white;
 	justify-content: center;
 	align-items: center;
+	
+	.color {
+		position: absolute;
+		right: 4px;
+		width: 8px;
+		height: 85%;
+		border-radius: 2px;
+		background: linear-gradient(45deg, rgba(64, 64, 64, 1) 25%, rgba(192, 192, 192, 1) 25%, rgba(192, 192, 192, 1) 75%, rgba(64, 64, 64, 1) 75%, rgba(64, 64, 64, 1) 100%);
+		background-repeat: repeat;
+		background-position: 0px 0px, 4px 4px;
+		background-size: 8px 8px;
+	}
+	
+	.colorstrip {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		border-radius: 2px;
+	}
 }
+

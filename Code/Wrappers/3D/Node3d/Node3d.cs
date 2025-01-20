@@ -56,6 +56,7 @@ public class Node3d : PanelComponent, INodeWrapper<GameObject> {
 	}
 
 	protected override void OnTreeBuilt() {
+		if (Node == null) return;
 		Node.Render(GameObject, Node3dPanel.CenterPanel);
 	}
 
@@ -64,7 +65,8 @@ public class Node3d : PanelComponent, INodeWrapper<GameObject> {
 	}
 
 	protected override void OnDestroy() {
-		//Node.Dispose(); ..?
+		if (Node == null) return;
 		Node.GetAllWires().ForEach(x => x.GetMeta<Wire3d>().GameObject.DestroyImmediate());
+		//Node.Dispose(); ..?
 	}
 }

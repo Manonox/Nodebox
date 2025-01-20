@@ -1,7 +1,13 @@
 {
   "Title": "Nodebox",
   "Type": "library",
-  "Org": "local",
+  "Org": "manonox",
   "Ident": "nodebox",
-  "Schema": 1
+  "Schema": 1,
+  "IncludeSourceFiles": false,
+  "Resources": null,
+  "PackageReferences": [],
+  "EditorReferences": null,
+  "IsWhitelistDisabled": false,
+  "Metadata": {}
 }

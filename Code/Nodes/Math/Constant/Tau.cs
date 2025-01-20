@@ -10,6 +10,7 @@ public class Tau<T> : Node
 	public override string Name => $"Tau<{typeof(T).GetPrettyName()}>";
     public override string Desc => null;
     public override string[] Groups => new string[] { "Math", "Constant" };
+	public override Vector2 SizeMultiplier => new(0.75f, 1f);
 
     public override (Pin[] In, Pin[] Out) InitialPins => (
         new Pin[] {

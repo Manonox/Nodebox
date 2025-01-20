@@ -3,11 +3,18 @@
 
 <root>
 	<label @ref="Label">@Text</label>
+	@if (Type == typeof(Color))
+	{
+		<div class="color">
+			<div class="colorstrip" style="background-color: @(((Color)Value).Rgba)"></div>
+		</div>
+	}
 </root>
 
 @code
 {
 	[Property] public object Value { get; set; } = null;
+	public Type Type => Value?.GetType();
 	[Property, TextArea] public string Text => Value?.ToString() ?? "null";
 	[Property] public bool FitText { get; set; } = false;
 	[Property] public float? FontSizeOverride { get; set; } = null;

@@ -38,6 +38,13 @@ public static class VectorExtensions {
         MathF.Abs(v.w)
     );
 
+    public static Color Abs(this Color v) => new(
+        MathF.Abs(v.r),
+        MathF.Abs(v.g),
+        MathF.Abs(v.b),
+        MathF.Abs(v.a)
+    );
+
 
     public static Vector2 Floor(this Vector2 v) => new(
         MathF.Floor(v.x),
@@ -112,6 +119,12 @@ public static class VectorExtensions {
         Math.Clamp(v.z, min.z, max.z)
     );
 
+    public static Color Clamp(this Color v, Color min, Color max) => new(
+        Math.Clamp(v.r, min.r, max.r),
+        Math.Clamp(v.g, min.g, max.g),
+        Math.Clamp(v.b, min.b, max.b),
+        Math.Clamp(v.a, min.a, max.a)
+    );
     
     public static Vector2Int Negate(this Vector2Int v) => new(
         -v.x,

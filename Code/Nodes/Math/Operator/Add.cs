@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace Nodebox.Nodes;
 
 [RegisterNode]
@@ -9,13 +11,13 @@ namespace Nodebox.Nodes;
 [Generics(typeof(Vector2))]
 [Generics(typeof(Vector3))]
 [Generics(typeof(Vector4))]
-// [Generics(typeof(Vector2Int))]
-// [Generics(typeof(Vector3Int))]
+[Generics(typeof(Vector2Int))]
+[Generics(typeof(Vector3Int))]
 
 [Generics(typeof(Angles))]
 
 [Generics(typeof(Color))]
-public class Add<T> : Node
+public class Add<T> : Node //where T : IAdditionOperators<T, T, T>
 {
 	public override Type[] Generics => [typeof(T)];
     

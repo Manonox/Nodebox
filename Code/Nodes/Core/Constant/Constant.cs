@@ -57,7 +57,7 @@ public class Constant<T> : Node
     }
 
     
-	private ConstantPanel ConstantPanel { get; set; }
+	public ConstantPanel ConstantPanel { get; set; }
 	public override void Render(GameObject go, Panel panel)
 	{
         if (ConstantPanel == null) {
@@ -67,6 +67,7 @@ public class Constant<T> : Node
 
 	    ConstantPanel.Panel.Parent = panel;
         ConstantPanel.Type = typeof(T);
+        ConstantPanel.Value = (object)Value;
 
         if (typeof(Reference).IsAssignableFrom(typeof(T)) && Value != null) {
             ConstantPanel.Reference = (Reference)(object)Value;

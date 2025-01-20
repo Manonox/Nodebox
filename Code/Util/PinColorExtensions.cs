@@ -6,7 +6,6 @@ namespace Nodebox;
 using T = Dummy;
 
 public static class PinColorExtensions {
-
     public static Dictionary<Type, Color> ByType = new(new Dictionary<Type, Color>() {
         { typeof(object), new Color(1.0f, 0.25f, 1.0f) },
 

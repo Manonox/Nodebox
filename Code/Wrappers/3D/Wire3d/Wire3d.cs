@@ -144,6 +144,8 @@ public class Wire3d : Component
 	public Exception TrySetTo(Node3d to, int? index = null) => TrySet(to, PinType.Input, index);
 
 	protected override void OnStart() {
+		UpdateWire();
+		
 		LineRenderer.Color = Color.White;
 		LineRenderer.Width = 0.6f;
 		LineRenderer.EndCap = SceneLineObject.CapStyle.Arrow;
