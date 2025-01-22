@@ -52,6 +52,7 @@ public class Wire : IDisposable, IMeta
         var toType = to.InputPins[toIndex].Type;
 
         if (fromType == typeof(object) || toType == typeof(object)) return;
+        Assert.False(fromType == typeof(Polymorphic) && toType == typeof(Polymorphic), "Both pins can't be Polymorphic");
         if (fromType == typeof(Polymorphic) || toType == typeof(Polymorphic)) return;
         if (Library.TryGetImplicitConversion(fromType, toType, out var _)) return;
 
@@ -90,6 +91,7 @@ public class Wire : IDisposable, IMeta
             return;
         }
 
+        Assert.False(inType == typeof(Polymorphic) && outType == typeof(Polymorphic), "wtf");
         if (inType == typeof(Polymorphic) || outType == typeof(Polymorphic)) {
             done();
             return;
