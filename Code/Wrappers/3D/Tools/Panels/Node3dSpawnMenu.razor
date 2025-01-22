@@ -4,7 +4,7 @@
 <root>
     <label id="title">Spawn Node</label>
     <div id="list">
-        @foreach (Library.Entry entry in Library.Entries)
+        @foreach (var entry in ShownEntries)
         {
             <Node3dSpawnMenuButton Entry=@entry></Node3dSpawnMenuButton>
         }
@@ -13,6 +13,11 @@
 
 @code
 {
-    public Library Library { get; set; }
-	protected override int BuildHash() => System.HashCode.Combine( Library );
+    public IEnumerable<Library.Entry> ShownEntries =>
+        Library.Entries
+            .Where(x => !x.Initialized)
+            .Where(x => !x.Polymorphic || x.PolymorphParent == null);
+
+    
+	// protected override int BuildHash() => System.HashCode.Combine( );
 }

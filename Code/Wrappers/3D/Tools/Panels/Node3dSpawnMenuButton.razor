@@ -1,12 +1,29 @@
 @namespace Nodebox
 
-<button style="@(Entry.Generics.Count > 0 ? $"color: {Entry.Generics[0].GetColor().Rgb}" : "")">
+<button style="@(Color.HasValue ? $"color: {Color.Value.Rgb}" : "")">
     @Entry.Name
 </button>
 
 @code
 {
     public Library.Entry Entry { get; set; }
+
+    public Color? Color { get {
+        if (Entry.IsGenericType && Entry.Generics.Length > 0) {
+            return Entry.Generics[0].GetColor();
+        }
+        
+        var node = Entry.CreateNode();
+        if (node.InputPins.Count() > 0 && node.InputPins[0].Type != typeof(Polymorphic)) {
+            return node.InputPins[0].Type.GetColor();
+        }
+
+        if (node.OutputPins.Count() > 0 && node.OutputPins[0].Type != typeof(Polymorphic)) {
+            return node.OutputPins[0].Type.GetColor();
+        }
+
+        return null;
+    } }
 
     protected override int BuildHash() => System.HashCode.Combine( Entry );
 

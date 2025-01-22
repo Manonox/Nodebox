@@ -1,29 +1,31 @@
 namespace Nodebox.Nodes;
 
 
-[RegisterNode]
+[Register]
+[Description("Takes any input and displays it")]
+[Tag("Core")]
+[Reader]
 public class Display : Node
 {
-    public override string Name => "Display";
-    public override string Desc => "Takes any input and displays it";
-    public override string[] Groups => new string[] {"Core"};
-
 	public override (Pin[] In, Pin[] Out) InitialPins => (
         new Pin[] {
             Pin.New<object>("*")
         },
 
-        new Pin[] {
-        }
+        []
     );
 
-	private DisplayPanel DisplayPanel { get; set; }
-	public override void Render(GameObject go, Panel panel)
+	public DisplayPanel DisplayPanel { get; private set; }
+	public override void Render(Panel panel)
 	{
-		DisplayPanel = go.GetOrAddComponent<DisplayPanel>();
-        DisplayPanel.Panel.Parent = panel;
+        if (DisplayPanel == null) {
+            DisplayPanel = new DisplayPanel();
+            Assert.NotNull(panel);
+            DisplayPanel.Parent = panel;
+            DisplayPanel.FitText = true;
+        }
+
         DisplayPanel.Value = GetInput<object>(0);
-        DisplayPanel.FitText = true;
         DisplayPanel.StateHasChanged();
 	}
 }

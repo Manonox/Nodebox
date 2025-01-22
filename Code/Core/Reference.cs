@@ -98,6 +98,10 @@ public class Reference<T> : Reference {
     
     public Type Type { get; private set; } = typeof(T);
 
+	public override bool IsValid() {
+		return base.IsValid() && Type == PropertyType;
+	}
+
 	public bool Write(T value) => Write<T>(value);
 
     public bool TryRead(out T value) => TryRead<T>(out value);

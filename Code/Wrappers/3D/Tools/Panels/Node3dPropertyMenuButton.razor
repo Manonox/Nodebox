@@ -1,7 +1,7 @@
 @namespace Nodebox
 
 <button>
-    <label class="type" style="color: @TypeColor.Rgb">@($"{PropertyDescription.PropertyType.GetPrettyName()}")</label>
+    <label class="type" style="color: @TypeColor.Rgb">@($"{PropertyDescription.PropertyType.GetDisplayName()}")</label>
     <label class="name">@PropertyDescription.Name</label>
     @if (Comment.Length > 0)
     {
@@ -32,7 +32,7 @@
         if (Target.GetType() == typeof(Component) && !((Component)Target).IsValid())
             return "???";
         var obj = PropertyDescription.GetValue(Target);
-        return obj.ToString();
+        return obj?.ToString() ?? "null";
     } }
 
     protected override int BuildHash() => System.HashCode.Combine( Target, PropertyDescription, ValueText );

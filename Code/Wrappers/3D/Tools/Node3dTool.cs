@@ -3,9 +3,6 @@ using Sandbox.Diagnostics;
 
 namespace Nodebox;
 
-
-using T = Dummy;
-
 public class Node3dTool : Component
 {
     [RequireComponent] public Sandbox.WorldInput WorldInput { get; set; }
@@ -13,7 +10,6 @@ public class Node3dTool : Component
     [RequireComponent] public Node3dSpawnMenu Node3dSpawnMenu { get; set; }
     [RequireComponent] public Node3dContextMenu Node3dContextMenu { get; set; }
     [RequireComponent] public Node3dPropertyMenu Node3dPropertyMenu { get; set; }
-    [RequireComponent] public Library Library { get; set; }
     
     [Property]
     [InputAction]
@@ -56,19 +52,19 @@ public class Node3dTool : Component
 
 	protected override void OnStart()
 	{
-        Node3dSpawnMenu.Library = Library;
         Node3dSpawnMenu.Enabled = false;
-
         Node3dContextMenu.Enabled = false;
-
-        Node3dPropertyMenu.Library = Library;
         Node3dPropertyMenu.Enabled = false;
 	}
 
-    public GameObject OnNodeSpawnRequested(Library.Entry entry, bool autoAttach = true) {
-        var go = entry.CreateNode3d();
+    private void PositionNewGameObject(GameObject go) {
         go.WorldPosition = WorldPosition + WorldRotation.Forward * 50f;
         go.WorldRotation = Rotation.FromYaw(WorldRotation.Yaw() - 180f);
+    }
+
+    public GameObject OnNodeSpawnRequested(Library.Entry entry, bool autoAttach = true) {
+        var go = entry.CreateNode3d();
+        PositionNewGameObject(go);
         if (autoAttach)
             AttachToHeldWire(go);
         return go;
@@ -263,7 +259,7 @@ public class Node3dTool : Component
 
     private void OnPinRightClicked(Node3d node3d, PinButton pinButton) {
         node3d.Node.GetPinWires(pinButton.IsOutput ? PinType.Output : PinType.Input, pinButton.Index).ForEach(x => {
-            x.GetMeta<Wire3d>().GameObject.Destroy();
+            x.GetMeta<Wire3d>()?.GameObject.Destroy();
         });
     }
 
@@ -325,37 +321,40 @@ public class Node3dTool : Component
         else if (ContextMenuTarget.GetType() == typeof(PropertyDescription)) {
             var gameObject = PropertyMenuTarget;
             var propertyDescription = (PropertyDescription)ContextMenuTarget;
-            //var reference = new Reference(PropertyMenuTargetComponent, propertyDescription);
-            var reference = TypeLibrary.GetType<Reference<T>>().CreateGeneric<Reference>(
+            var reference = TypeLibrary.GetType(typeof(Reference<>)).CreateGeneric<Reference>(
                 [propertyDescription.PropertyType],
                 [PropertyMenuTargetComponent, propertyDescription]
                 );
 
             Node3dContextMenu.Entries = new() {
                 new("Source", "output", () => {
-                    var node3dGo = OnNodeSpawnRequested(new Library.Entry(typeof(Source<T>), [propertyDescription.PropertyType]), false);
-                    var node3d = node3dGo.GetComponent<Node3d>();
+                    var node3dGo = new GameObject();
+                    PositionNewGameObject(node3dGo);
+                    var node3d = node3dGo.GetOrAddComponent<Node3d>();
                     
-                    var source = TypeLibrary.GetType<Source<T>>().CreateGeneric<Node>([propertyDescription.PropertyType], [reference]);
+                    var source = TypeLibrary.GetType(typeof(Source<>)).CreateGeneric<Node>([propertyDescription.PropertyType], [reference]);
                     node3d.Node = source;
                     AttachToHeldWire(node3dGo);
                     CloseContextMenu();
                 }),
                 new("Drive", "input", () => {
-                    var node3dGo = OnNodeSpawnRequested(new Library.Entry(typeof(Drive<T>), [propertyDescription.PropertyType]), false);
-                    var node3d = node3dGo.GetComponent<Node3d>();
+                    var node3dGo = new GameObject();
+                    PositionNewGameObject(node3dGo);
+                    var node3d = node3dGo.GetOrAddComponent<Node3d>();
                     
-                    var drive = TypeLibrary.GetType<Drive<T>>().CreateGeneric<Node>([propertyDescription.PropertyType], [reference]);
+                    var drive = TypeLibrary.GetType(typeof(Drive<>)).CreateGeneric<Node>([propertyDescription.PropertyType], [reference]);
                     node3d.Node = drive;
                     AttachToHeldWire(node3dGo);
                     CloseContextMenu();
                 }),
                 new("Reference", "link", () => {
-                    var node3dGo = OnNodeSpawnRequested(new Library.Entry(typeof(Constant<T>), [propertyDescription.PropertyType]), false);
-                    var node3d = node3dGo.GetComponent<Node3d>();
+                    var node3dGo = new GameObject();
+                    PositionNewGameObject(node3dGo);
+                    var node3d = node3dGo.GetOrAddComponent<Node3d>();
                     
-                    var referenceType = TypeLibrary.GetType<Reference<T>>().MakeGenericType([propertyDescription.PropertyType]);
-                    node3d.Node = TypeLibrary.GetType<Constant<T>>().CreateGeneric<Node>([referenceType], [reference]);
+                    //var referenceType = TypeLibrary.GetType(typeof(Reference<>)).MakeGenericType([propertyDescription.PropertyType]);
+                    var referenceType = reference.GetType();
+                    node3d.Node = TypeLibrary.GetType(typeof(Constant<>)).CreateGeneric<Node>([referenceType], [reference]);
                     AttachToHeldWire(node3dGo);
                     CloseContextMenu();
                 }),
@@ -396,15 +395,23 @@ public class Node3dTool : Component
     public void TrySpawnConstantOrDisplay() {
         var pinType = HeldWire.Value.TargetPinType;
         if (pinType == PinType.Input) {
-            OnNodeSpawnRequested(new Library.Entry(typeof(Display), []));
+            var node3dGo = new GameObject();
+            PositionNewGameObject(node3dGo);
+            var node3d = node3dGo.GetOrAddComponent<Node3d>();
+            var display = TypeLibrary.GetType<Display>().Create<Node>();
+            node3d.Node = display;
+            AttachToHeldWire(node3dGo);
+            CloseContextMenu();
         } else {
             var wire3d = HeldWire.Value.Wire3d;
             var type = wire3d.To.Node.InputPins[wire3d.ToIndex].Type;
-            var constantNodeGenericType = TypeLibrary.GetType<Constant<T>>().TargetType;
-            if (!Library.Entries.Where(x => x.Type == constantNodeGenericType && x.Generics.Count == 1 && x.Generics[0] == type).Any())
+            var constantNodeGenericType = TypeLibrary.GetType(typeof(Constant<>)).MakeGenericType([type]);
+            var constant = Library.Entries.Where(x => x.Type == constantNodeGenericType);
+            if (!constant.Any()) {
                 return;
+            }
 
-            OnNodeSpawnRequested(new Library.Entry(typeof(Constant<T>), [type]));
+            OnNodeSpawnRequested(constant.First());
         }
     }
 
@@ -422,7 +429,9 @@ public class Node3dTool : Component
         var index = pinButton.Index;
         var value = node3d.Node.GetPinValue(pinType, index);
         var pin = node3d.Node.GetPin(pinType, index);
-        var text = $"{value?.ToString() ?? "null"} ({pin.Type.GetPrettyName()})";
+        string text = $"{value?.ToString() ?? "null"} ({pin.Type.GetDisplayName()})";
+        if (pin.Type == typeof(Polymorphic))
+            text = $"{pin.Name} (Polymorphic)";
         hud.DrawText(new TextRendering.Scope(text, Color.White.WithAlphaMultiplied(0.8f), 16, "Poppins", 600), Screen.Size * 0.51f, TextFlag.LeftTop);
     }
 

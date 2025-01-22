@@ -22,7 +22,6 @@
 
 @code
 {
-    public Library Library { get; set; }
     public GameObject TargetGameObject { get; set; }
 
     private ComponentList ComponentList => TargetGameObject.Components;
@@ -37,7 +36,7 @@
             .DefaultIfEmpty()
             .Aggregate((a, b) => {
                 var result = new HashSet<string>(a);
-                a.UnionWith(b);
+                result.UnionWith(b);
                 return result;
                 });
         var propertyDescriptions = TypeLibrary.GetPropertyDescriptions(obj).ToList();
@@ -47,7 +46,7 @@
             return a.Name.CompareTo(b.Name);
         });
         foreach (var propertyDescription in propertyDescriptions) {
-            if (!Library.AllTypes.Exists(x => x == propertyDescription.PropertyType))
+            if (!Library.AllTypes.Contains(propertyDescription.PropertyType))
                 continue;
             if (!propertyDescription.CanRead && !propertyDescription.CanWrite)
                 continue;

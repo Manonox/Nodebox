@@ -30,7 +30,6 @@ public static class VectorExtensions {
         v.z % other.z
     );
 
-
     public static Vector4 Abs(this Vector4 v) => new(
         MathF.Abs(v.x),
         MathF.Abs(v.y),
@@ -44,7 +43,6 @@ public static class VectorExtensions {
         MathF.Abs(v.b),
         MathF.Abs(v.a)
     );
-
 
     public static Vector2 Floor(this Vector2 v) => new(
         MathF.Floor(v.x),
@@ -135,5 +133,44 @@ public static class VectorExtensions {
         -v.x,
         -v.y,
         -v.z
+    );
+    
+    public static Angles Negate(this Angles v) => new(
+        -v.pitch,
+        -v.yaw,
+        -v.roll
+    );
+    
+    public static Color Negate(this Color v) => new(
+        -v.r,
+        -v.g,
+        -v.b,
+        -v.a
+    );
+
+    public static Vector4 Divide(this Vector4 v, Vector4 other) => new(
+        v.x / other.x,
+        v.y / other.y,
+        v.z / other.z,
+        v.w / other.w
+    );
+    
+    public static Color Divide(this Color v, Color other) => new(
+        v.r / other.r,
+        v.g / other.g,
+        v.b / other.b,
+        v.a / other.a
+    );
+    
+    public static Angles Multiply(this Angles v, Angles other) => new(
+        v.pitch * other.pitch,
+        v.yaw * other.yaw,
+        v.roll * other.roll
+    );
+
+    public static Angles Divide(this Angles v, Angles other) => new(
+        v.pitch / other.pitch,
+        v.yaw / other.yaw,
+        v.roll / other.roll
     );
 }

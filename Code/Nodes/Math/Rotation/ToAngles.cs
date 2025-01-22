@@ -1,13 +1,11 @@
 namespace Nodebox.Nodes;
 
-[RegisterNode]
+[Register]
+[Description("Converts Rotation into Angles (pitch, yaw, roll)")]
+[Tag("Math", "Rotation", "Angles")]
+[Alias("ToEuler")]
 public class ToAngles : Node
-{    
-    public override string Name => "ToAngles";
-    public override string Desc => "Converts Rotation into Angles";
-    public override string[] Groups => [ "Math", "Angles", "Rotation" ];
-    public override string[] Aliases => [ "ToEuler" ];
-
+{
     public override (Pin[] In, Pin[] Out) InitialPins => (
         new Pin[] {
             Pin.New<Rotation>("Rotation"),

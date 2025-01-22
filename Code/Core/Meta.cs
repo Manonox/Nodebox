@@ -14,5 +14,6 @@ public class Meta<T>( T value ) : Meta(typeof(T))
 
 public interface IMeta {
     public abstract T GetMeta<T>();
+    public abstract bool TryGetMeta<T>(out T value);
     public abstract void SetMeta<T>(T value);
 }

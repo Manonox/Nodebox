@@ -1,28 +1,31 @@
 namespace Nodebox.Nodes;
 
-[RegisterNode]
-[Generics(typeof(float))]
-[Generics(typeof(double))]
-[Generics(typeof(int))]
-//[Generics(typeof(long))]
-public class Square<T> : Node
-{
-	public override Type[] Generics => [typeof(T)];
-    
-    public override string Name => $"Square<{typeof(T).GetPrettyName()}>";
-    public override string Desc => "Takes a number and multiplies it by itself";
-    public override string[] Groups => new string[] { "Math" };
-	public override Vector2 SizeMultiplier => new(0.66f, 1f);
 
-	public override (Pin[] In, Pin[] Out) InitialPins => (
+[Register]
+[Tag("Math")]
+[Polymorphic(true)]
+public class Square : Node
+{
+    public override (Pin[] In, Pin[] Out) InitialPins => (
         new Pin[] {
-            Pin.New<T>("X")
+            Pin.New<Polymorphic>("X")
         },
         
         new Pin[] {
-            Pin.New<T>("X²")
+            Pin.New<Polymorphic>("X²")
         }
     );
+
+	public override Node Polymorph(PinWireChange change)
+        => PolymorphHelpers.ToConnectedTypeIfRegistered(typeof(Square<>), change);
+}
+
+
+[Register(typeof(Library.Float))]
+[Polymorphic(typeof(Square))]
+public class Square<T> : Square
+{
+    public override (Pin[] In, Pin[] Out) InitialPins => base.InitialPins.SubstitutePolymorphic<T>();
 
     public override void Evaluate() {
         if (typeof(T) == typeof(float)) {
@@ -37,19 +40,10 @@ public class Square<T> : Node
             return;
         }
 
-        if (typeof(T) == typeof(int)) {
-            var x = GetInput<int>(0);
-            SetOutput(0, x * x);
-            return;
-        }
-        
-        if (typeof(T) == typeof(long)) {
-            var x = GetInput<long>(0);
-            SetOutput(0, x * x);
-            return;
-        }
-
         throw new NotImplementedException();
     }
+
+	public override Node Polymorph(PinWireChange change) =>
+        PolymorphHelpers.ToNonGenericIfAllDisconnected<Square>(change);
 }
 

@@ -1,38 +1,57 @@
-using System.Numerics;
-
 namespace Nodebox;
 
+
 public static class TypeExtensions {
-    public static string GetPrettyName(this Type type)
-    {
-        if (type == typeof(float)) {
-            return "float";
+	public static T CreateClosedGeneric<T>(this Type type, object[] args) { // params
+        var typeDescription = TypeLibrary.GetType(type);
+        if (!typeDescription.IsGenericType) {
+            return typeDescription.Create<T>(args);
         }
-        else if (type == typeof(double)) {
-            return "double";
-        }
-        else if (type == typeof(int)) {
-            return "int";
-        }
-        else if (type == typeof(string)) {
-            return "string";
-        }
-        else if (type == typeof(bool)) {
-            return "bool";
-        }
-        else if (type == typeof(Vector2Int)) {
-            return "Vector2i";
-        }
-        else if (type == typeof(Vector3Int)) {
-            return "Vector3i";
-        }
-        else {
-            return TypeLibrary.GetType(type).Title.Replace(" ", null);
-        }
+
+        var generics = TypeLibrary.GetGenericArguments(type);
+        return typeDescription.CreateGeneric<T>(generics, args);
     }
 
-    public static bool IsVectorType<T>() => typeof(T).IsVectorType();
+	private abstract record Dummy<T> { }
+	public static string GetDisplayName(this Type type)
+	{
+		if (type == typeof(Vector2))
+			return "Vector2";
+		if (type == typeof(Vector3))
+			return "Vector3";
+		if (type == typeof(Vector4))
+			return "Vector4";
+		if (type == typeof(Vector2Int))
+			return "Vector2Int";
+		if (type == typeof(Vector3Int))
+			return "Vector3Int";
+		if (type == typeof(Rotation))
+			return "Rotation";
+		if (type == typeof(Angles))
+			return "Angles";
+		if (type == typeof(Color))
+			return "Color";
 
+		var name = DisplayInfo.ForType(type).Name;
+		if (!TypeLibrary.GetType(type).IsGenericType) {
+			return name;
+		}
+
+		Type[] generics;
+		try {
+			generics = TypeLibrary.GetGenericArguments(type);
+		}
+		catch {
+			generics = TypeLibrary.GetType(type).GenericArguments;
+			return $"{name}<{string.Join(", ", generics.Enumerate().Select(x => "T" + x.Index.ToString()))}>";
+		}
+
+		Assert.True(generics.Length > 0);
+
+		return $"{name}<{string.Join(", ", generics.Select(x => x.GetDisplayName()))}>";
+	}
+
+    public static bool IsVectorType<T>() => typeof(T).IsVectorType();
     public static bool IsVectorType(this Type type)
     {
         if (type == typeof(Vector2))
@@ -49,8 +68,8 @@ public static class TypeExtensions {
             return true;
         if (type == typeof(Rotation))
             return true;
-        if (type == typeof(Quaternion))
-            return true;
+        // if (type == typeof(Quaternion))
+        //     return true;
         if (type == typeof(Color))
             return true;
         return false;
@@ -65,7 +84,7 @@ public static class TypeExtensions {
 		_ when type == typeof(Vector3Int) => typeof(int),
 		_ when type == typeof(Angles) => typeof(float),
 		_ when type == typeof(Rotation) => typeof(float),
-		_ when type == typeof(Quaternion) => typeof(float),
+		// _ when type == typeof(Quaternion) => typeof(float),
 		_ when type == typeof(Color) => typeof(float),
 		_ => throw new ArgumentException("Argument type is not a vector type")
 	};
@@ -79,7 +98,7 @@ public static class TypeExtensions {
 		_ when type == typeof(Vector4) => 4,
 		_ when type == typeof(Angles) => 3,
 		_ when type == typeof(Rotation) => 4,
-		_ when type == typeof(Quaternion) => 4,
+		// _ when type == typeof(Quaternion) => 4,
 		_ when type == typeof(Color) => 4,
 		_ => 1 // throw new ArgumentException("Argument type is not a vector type")
 	};

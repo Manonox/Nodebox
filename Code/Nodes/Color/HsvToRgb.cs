@@ -1,12 +1,10 @@
 namespace Nodebox.Nodes;
 
-[RegisterNode]
+[Register]
+[Description("Converts Hue, Saturation, Value into the corresponding RGB color")]
+[Tag("Color")]
 public class HsvToRgb : Node
 {
-    public override string Name => $"HsvToRgb";
-    public override string Desc => "Converts Hue, Saturation, Value into the corresponding RGB color";
-    public override string[] Groups => new string[] { "Color" };
-
     public override (Pin[] In, Pin[] Out) InitialPins => (
         new Pin[] {
             Pin.New<float>("Hue"),

@@ -1,13 +1,13 @@
+
 namespace Nodebox.Nodes;
 
-[RegisterNode]
+[Register]
+[Description("Continuously writes to a property by reference")]
+[Tag("Core")]
+[Writer]
+[Polymorphic]
 public class IndirectDrive : Node
-{   
-    public override bool Tick => true;
-    public override string Name => "IndirectDrive";
-    public override string Desc => "Continuously writes to a property by reference";
-    public override string[] Groups => new string[] { "Core" };
-
+{
 	public override (Pin[] In, Pin[] Out) InitialPins => (
         new Pin[] {
             Pin.New<Reference>("Reference"),
@@ -22,21 +22,31 @@ public class IndirectDrive : Node
 		var reference = GetInput<Reference>(0);
         RenamePin(PinType.Input, 1, reference?.PropertyName ?? "???");
         if (reference == null) return;
-        //SetPinType(PinType.Input, 0, reference.TargetType);
+        //SetPinType(PinType.Input, 0, reference.TargetType); // ???
         reference.Write(GetInput<object>(1));
 	}
+
+	public override Node Polymorph(PinWireChange change) {
+        Type type = change.PolymorphTargetType;
+        if (change.PinIndex == 0) {
+            if (!TypeLibrary.GetType(type).IsGenericType) {
+                return null;
+            }
+
+            type = TypeLibrary.GetGenericArguments(type)[0]; // Dereference type or smth lmao
+        }
+
+        return PolymorphHelpers.ToType(typeof(IndirectDrive<>), type);
+    }
 }
 
-[RegisterNode]
+[Register(typeof(Library.All))]
+[Polymorphic(typeof(IndirectDrive))]
 public class IndirectDrive<T> : IndirectDrive
-{
-    public override Type[] Generics => [typeof(T)];
-    
-    public override string Name => $"IndirectDrive<{typeof(T).GetPrettyName()}>";
-    
+{   
 	public override (Pin[] In, Pin[] Out) InitialPins => (
         new Pin[] {
-            Pin.New<Reference<T>>("Reference<T>"),
+            Pin.New<Reference<T>>($"Reference<{typeof(T).GetDisplayName()}>"),
             Pin.New<T>("*")
         },
 
@@ -50,4 +60,7 @@ public class IndirectDrive<T> : IndirectDrive
         if (reference == null) return;
         reference.Write(GetInput<T>(1));
 	}
+
+	public override Node Polymorph(PinWireChange change) =>
+        PolymorphHelpers.ToNonGenericIfAllDisconnected<IndirectDrive>(change);
 }

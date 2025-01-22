@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Sandbox.Diagnostics;
 
 namespace Nodebox;
@@ -11,7 +12,8 @@ public class Node3d : PanelComponent, INodeWrapper<GameObject> {
 		var old = _node;
 		_node = value;
 		_node.SetMeta(this);
-		GameObject.Name = value.ToString();
+		_node.PolymorphEvent += Polymorph;
+		GameObject.Name = _node.ToString();
 		UpdatePanel(old);
 	} }
 
@@ -24,6 +26,34 @@ public class Node3d : PanelComponent, INodeWrapper<GameObject> {
 
 	public GameObject Clone() => Wrap(_node.Clone());
 
+	protected override void OnTreeBuilt() {
+		if (Node == null) return;
+		if (Node3dPanel.CenterPanel != null) {
+			Node.Render(Node3dPanel.CenterPanel);
+		}
+	}
+
+	protected override void OnAwake() {
+		UpdatePanel(null);
+	}
+
+	protected override void OnDestroy() {
+		DestroyAllWires();
+	}
+
+	public void Polymorph(Node node) {
+		if (node == null) {
+			DestroyAllWires();
+			return;
+		}
+
+		Node = node;
+	}
+
+	public void DestroyAllWires() {
+		Node?.GetAllWires().ForEach(x => x?.GetMeta<Wire3d>()?.GameObject?.DestroyImmediate());
+	}
+	
 	private void UpdatePanel(Node old) {
 		if (Node3dPanel == null) return;
 		if (Node == null) return;
@@ -38,7 +68,9 @@ public class Node3d : PanelComponent, INodeWrapper<GameObject> {
 		WorldPanel.RenderOptions.Bloom = true;
 		WorldPanel.GetPanel().UserData = this;
 		
-		//Node.Render(GameObject, NodePanel.CenterPanel); ?
+		// if (NodePanel.CenterPanel != null) {
+			// Node.Render(GameObject, NodePanel.CenterPanel); ?
+		// }
 	}
 
 	public Vector3? GetLocalPinPosition(PinType type, int pinIndex) {
@@ -53,20 +85,5 @@ public class Node3d : PanelComponent, INodeWrapper<GameObject> {
 	public Vector3? GetWorldPinPosition(PinType type, int pinIndex) {
 		var localPosition = GetLocalPinPosition(type, pinIndex);
 		return localPosition.HasValue ? WorldTransform.PointToWorld(localPosition.Value) : null;
-	}
-
-	protected override void OnTreeBuilt() {
-		if (Node == null) return;
-		Node.Render(GameObject, Node3dPanel.CenterPanel);
-	}
-
-	protected override void OnAwake() {
-		UpdatePanel(null);
-	}
-
-	protected override void OnDestroy() {
-		if (Node == null) return;
-		Node.GetAllWires().ForEach(x => x.GetMeta<Wire3d>().GameObject.DestroyImmediate());
-		//Node.Dispose(); ..?
 	}
 }

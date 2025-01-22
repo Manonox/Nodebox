@@ -38,7 +38,7 @@ public class Wire3d : Component
 
 	private Wire _wire;
 	public Wire Wire { get => _wire; private set {
-		var old = _wire;
+		// var old = _wire;
 		_wire = value;
 		_wire.SetMeta(this);
 		GameObject.Name = value.ToString();
@@ -64,32 +64,31 @@ public class Wire3d : Component
 	private void UpdateWire() {
 		Wire?.Dispose();
 		if (!Enabled) return;
-		//if (IsValidWire()) return;
-		try {
-			Wire = new Wire(From.Node, FromIndex, To.Node, ToIndex);
-		} catch {
-			Wire?.Dispose();
-			// throw; // wtf
+		if (From == null) return;
+		if (To == null) return;
+
+		var exception = GetWireException();
+		if (exception != null) {
+			Log.Warning(exception);
+			return;
 		}
+
+		var wire = new Wire(From.Node, FromIndex, To.Node, ToIndex, true);
+
+		Wire = wire;
+		Wire.Connect();
 	}
 
-	
-	[Pure]
-	[System.Diagnostics.Contracts.Pure]
 	public bool IsValidWire() {
 		return GetWireException() == null;
 	}
 
-	[Pure]
-	[System.Diagnostics.Contracts.Pure]
 	public Exception GetWireException() {
-		Wire testWire = null;
 		try {
-			testWire = new Wire(From.Node, FromIndex, To.Node, ToIndex);
+			Wire.Check(From.Node, FromIndex, To.Node, ToIndex);
 		} catch (Exception e) {
 			return e;
 		}
-		testWire?.Dispose();
 		return null;
 	}
 

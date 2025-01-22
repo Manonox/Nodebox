@@ -1,28 +1,33 @@
+
 namespace Nodebox.Nodes;
 
-[RegisterNode]
-[Generics(typeof(float))]
-[Generics(typeof(double))]
-[Generics(typeof(Vector2))]
-[Generics(typeof(Vector3))]
-[Generics(typeof(Vector4))]
-public class Ceiling<T> : Node
-{
-	public override Type[] Generics => [typeof(T)];
-    
-    public override string Name => $"Ceiling<{typeof(T).GetPrettyName()}>";
-    public override string Desc => "Rounds the value up";
-    public override string[] Groups => new string[] { "Math" };
 
+[Register]
+[Description("Rounds the value up")]
+[Tag("Math")]
+[Polymorphic(true)]
+public class Ceiling : Node
+{
     public override (Pin[] In, Pin[] Out) InitialPins => (
         new Pin[] {
-            Pin.New<T>("X"),
+            Pin.New<Polymorphic>("X"),
         },
         
         new Pin[] {
-            Pin.New<T>("⌈X⌉")
+            Pin.New<Polymorphic>("⌈X⌉")
         }
     );
+
+	public override Node Polymorph(PinWireChange change) =>
+        PolymorphHelpers.ToConnectedTypeIfRegistered(typeof(Ceiling<>), change);
+}
+
+
+[Register(typeof(Library.FloatN))]
+[Polymorphic(typeof(Ceiling))]
+public class Ceiling<T> : Ceiling
+{
+    public override (Pin[] In, Pin[] Out) InitialPins => base.InitialPins.SubstitutePolymorphic<T>();
 
     public override void Evaluate() {
         if (typeof(T) == typeof(float)) {
@@ -52,5 +57,8 @@ public class Ceiling<T> : Node
 
         throw new NotImplementedException();
     }
+    
+	public override Node Polymorph(PinWireChange change) =>
+        PolymorphHelpers.ToNonGenericIfAllDisconnected<Ceiling>(change);
 }
 

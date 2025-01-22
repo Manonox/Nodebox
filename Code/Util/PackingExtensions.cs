@@ -1,5 +1,3 @@
-using System.Numerics;
-
 namespace Nodebox;
 
 public static class PackingExtensions {
@@ -90,16 +88,6 @@ public static class PackingExtensions {
         );
     }
 
-    public static Quaternion PackQuaternion(this IEnumerable<float> ie) {
-        var v = ie.ToArray();
-        return new(
-            v[0],
-            v[1],
-            v[2],
-            v[3]
-        );
-    }
-
     public static Color PackColor(this IEnumerable<float> ie) {
         var v = ie.ToArray();
         return new(
@@ -150,13 +138,6 @@ public static class PackingExtensions {
         yield return v.y;
         yield return v.z;
         yield return v.w;
-    }
-
-    public static IEnumerable<float> Unpack(this Quaternion v) {
-        yield return v.X;
-        yield return v.Y;
-        yield return v.Z;
-        yield return v.W;
     }
 
     public static IEnumerable<float> Unpack(this Color v) {

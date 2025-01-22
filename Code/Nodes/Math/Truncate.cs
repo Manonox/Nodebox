@@ -1,28 +1,31 @@
+
 namespace Nodebox.Nodes;
 
-[RegisterNode]
-[Generics(typeof(float))]
-[Generics(typeof(double))]
-[Generics(typeof(Vector2))]
-[Generics(typeof(Vector3))]
-[Generics(typeof(Vector4))]
-public class Truncate<T> : Node
+
+[Register]
+[Description("Math")]
+[Polymorphic(true)]
+public class Truncate : Node
 {
-	public override Type[] Generics => [typeof(T)];
-
-	public override string Name => $"Truncate<{typeof(T).GetPrettyName()}>";
-    public override string Desc => "Gets rid of the decimal part";
-    public override string[] Groups => new string[] { "Math" };
-
     public override (Pin[] In, Pin[] Out) InitialPins => (
         new Pin[] {
-            Pin.New<T>("X"),
+            Pin.New<Polymorphic>("X"),
         },
         
         new Pin[] {
-            Pin.New<T>("Truncated X")
+            Pin.New<Polymorphic>("Truncated X")
         }
     );
+
+	public override Node Polymorph(PinWireChange change) =>
+        PolymorphHelpers.ToConnectedTypeIfRegistered(typeof(Truncate<>), change);
+}
+
+[Register(typeof(Library.FloatN))]
+[Polymorphic(typeof(Truncate))]
+public class Truncate<T> : Truncate
+{
+    public override (Pin[] In, Pin[] Out) InitialPins => base.InitialPins.SubstitutePolymorphic<T>();
 
     public override void Evaluate() {
         if (typeof(T) == typeof(float)) {
@@ -52,5 +55,8 @@ public class Truncate<T> : Node
 
         throw new NotImplementedException();
     }
+
+	public override Node Polymorph(PinWireChange change) =>
+        PolymorphHelpers.ToNonGenericIfAllDisconnected<Truncate>(change);
 }
 

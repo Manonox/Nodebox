@@ -1,114 +1,119 @@
-using System.Collections.Immutable;
-using System.Security.Cryptography.X509Certificates;
-using Sandbox.Diagnostics;
-
 namespace Nodebox;
 
 public class Wire : IDisposable, IMeta
-{
-    public Type Type { get; set; }
-    
-    public WeakReference<Node> From { get; private set; } = new(null);
+{   
+    private readonly WeakReference<Node> _from = new(null);
+    public Node From { get => _from.GetTarget(); set => _from.SetTarget(value); }
     public int FromIndex { get; private set; }
 
-    public WeakReference<Node> To { get; private set; } = new(null);
+    private readonly WeakReference<Node> _to = new(null);
+    public Node To { get => _to.GetTarget(); set => _to.SetTarget(value); }
     public int ToIndex { get; private set; }
     
-    internal Dictionary<Type, Meta> _meta = new();
+    public NetDictionary<Type, Meta> Meta { get; set; } = new();
+
     
-    public static Dictionary<(Type In, Type Out), Func<object, object>> ImplicitConvertions { get; set; } = new() {
-        { (typeof(float), typeof(int)), x => Convert.ToInt32(x) },
-        { (typeof(int), typeof(float)), x => Convert.ToSingle(x) },
+    public Pin FromPin => From.OutputPins[FromIndex];
+    public Pin ToPin => To.InputPins[ToIndex];
 
-        { (typeof(int), typeof(double)), value => Convert.ToDouble(value) },
-        { (typeof(double), typeof(int)), value => Convert.ToInt32(value) },
+    public Type FromType => FromPin.Type;
+    public Type ToType => ToPin.Type;
 
-        { (typeof(double), typeof(float)), value => Convert.ToSingle(value) },
-        { (typeof(float), typeof(double)), value => Convert.ToDouble(value) },
+    public Wire(Node from, int fromIndex, Node to, int toIndex, bool unconnected = false) {
+		Check(from, fromIndex, to, toIndex);
 
-        // Vector types?
-    };
+        From = from;
+        FromIndex = fromIndex;
+        To = to;
+        ToIndex = toIndex;
 
-    public Wire(Node from, int fromIndex, Node to, int toIndex) {
-		Assert.NotNull(from, "From can't be null");
+        if (unconnected) return;
+        Connect();
+    }
+
+    public void Connect() {
+        From.SetOutputWire(FromIndex, this);
+        To.SetInputWire(ToIndex, this);
+
+        Pass();
+    }
+
+    public static void Check(Node from, int fromIndex, Node to, int toIndex) {
+        Assert.NotNull(from, "From can't be null");
         Assert.NotNull(to, "To can't be null");
 		
         Assert.False(fromIndex < 0 | fromIndex >= from.OutputPins.Count, "From Index out of bounds");
         Assert.False(toIndex < 0 | toIndex >= to.InputPins.Count, "To Index out of bounds");
 
         Assert.False(from == to, "Node cannot be connected to itself");
-        
-        var fromPin = from.OutputPins[fromIndex];
-        var toPin = to.InputPins[toIndex];
-        if (toPin.Type != typeof(object)) {
-            if (!ImplicitConvertions.TryGetValue((fromPin.Type, toPin.Type), out var _))
-                Assert.True(fromPin.Type == toPin.Type, $"can't connect Pin types ({fromPin.Type.GetPrettyName()} -> {toPin.Type.GetPrettyName()})");
-        }
         Assert.False(to.InputWires[toIndex].IsValid(), "Recipient already has a wire connected to this index");
         
-        Type = fromPin.Type;
-        From.SetTarget(from);
-        FromIndex = fromIndex;
-        To.SetTarget(to);
-        ToIndex = toIndex;
+        var fromType = from.OutputPins[fromIndex].Type;
+        var toType = to.InputPins[toIndex].Type;
 
-        from.OutputWires[fromIndex].Add(new WeakReference<Wire>(this));
-        to.InputWires[toIndex] = new WeakReference<Wire>(this);
+        if (fromType == typeof(object) || toType == typeof(object)) return;
+        if (fromType == typeof(Polymorphic) || toType == typeof(Polymorphic)) return;
+        if (Library.TryGetImplicitConversion(fromType, toType, out var _)) return;
 
-        Pass();
+        Assert.True(fromType == toType, $"can't connect Pin types ({fromType.GetDisplayName()} -> {toType.GetDisplayName()})");
     }
+
     
     public T GetMeta<T>() {
-        _meta.TryGetValue(typeof(T), out Meta value);
+        if (!Meta.TryGetValue(typeof(T), out Meta value))
+            return default;
         return ((Meta<T>)value).Value;
     }
 
-    public void SetMeta<T>(T value) {
-        _meta.Add(typeof(T), new Meta<T>(value));
+    public bool TryGetMeta<T>(out T value) {
+        value = default;
+        var result = Meta.TryGetValue(typeof(T), out Meta meta);
+        if (result)
+            value = ((Meta<T>)meta).Value;
+        return result;
     }
 
-	public override string ToString() {
-        From.TryGetTarget(out var from);
-        To.TryGetTarget(out var to);
-		return $"{from}[{FromIndex}] -> {to}[{ToIndex}]";
-	}
+    public void SetMeta<T>(T value) {
+        Meta.Add(typeof(T), new Meta<T>(value));
+    }
 
     public void Pass() {
-        From.TryGetTarget(out var from);
-        To.TryGetTarget(out var to);
+        var value = From.OutputValues[FromIndex];
+        
+        var inType = From.OutputPins[FromIndex].Type;
+        var outType = To.InputPins[ToIndex].Type;
 
-        var value = from.OutputValues[FromIndex];
-        var inType = from.OutputPins[FromIndex].Type;
-        var outType = to.InputPins[ToIndex].Type;
-        if (outType != typeof(object) && inType != outType) {
-            Assert.True(ImplicitConvertions.TryGetValue((inType, outType), out var convert), "wtf");
-            value = convert(value);
+		void done() => To.SetInput( ToIndex, value );
+
+		if (inType == typeof(object) || outType == typeof(object)) {
+            done();
+            return;
         }
 
-        to.SetInput(ToIndex, value);
+        if (inType == typeof(Polymorphic) || outType == typeof(Polymorphic)) {
+            done();
+            return;
+        }
+        
+        if (inType == outType) {
+            done();
+            return;
+        }
+
+        Assert.True(Library.TryGetImplicitConversion(inType, outType, out var convert), "wtf");
+        value = convert(value);
+        To.SetInput(ToIndex, value);
     }
+    
+	public override string ToString() {
+		return $"{From}[{FromIndex}] -> {To}[{ToIndex}]";
+	}
     
     private bool disposed = false;
     public void Dispose() {
         if (!disposed) {
-            Assert.NotNull(From, "should never be null, because it's a WeakReference");
-            if (From.TryGetTarget(out var from)) {
-                var list = from.OutputWires[FromIndex];
-                var immutableList = list.ToImmutableList();
-                var index = immutableList.FindIndex(x => {
-                    if (!x.TryGetTarget(out var wire))
-                        return false;
-                    return wire == this;
-                });
-                if (index >= 0) {
-                    list.RemoveAt(index);
-                }
-            }
-
-            Assert.NotNull(To, "should never be null, because it's a WeakReference");
-            if (To.TryGetTarget(out var to)) {
-                to.InputWires[ToIndex].SetTarget(null);
-            }
+            From?.UnsetOutputWire(FromIndex, this);
+            To?.UnsetInputWire(ToIndex);
 
             //Log.Info(("Wire destroyed", From, FromIndex, To, ToIndex));
 

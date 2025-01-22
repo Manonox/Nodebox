@@ -1,8 +1,11 @@
 namespace Nodebox.Nodes;
 
 
-[RegisterNode]
-[Hidden]
+[Register(typeof(Library.All))]
+[Description("Continuously writes to a property")]
+[Tag("Core")]
+[Writer]
+[Initialized]
 public class Drive<T> : Node
 {
     public Drive() {
@@ -20,13 +23,6 @@ public class Drive<T> : Node
         SetInput(0, reference.Read());
     }
 
-    public override Type[] Generics => [typeof(T)];
-
-	public override bool Tick => true;
-	public override string Name => $"Drive<{typeof(T).GetPrettyName()}>";
-    public override string Desc => "Continuously writes to a property";
-    public override string[] Groups => new string[] { "Core" };
-
 	public override (Pin[] In, Pin[] Out) InitialPins => (
         new Pin[] {
             Pin.New<T>("*")
@@ -38,14 +34,18 @@ public class Drive<T> : Node
 
     public Reference Reference { get; set; }
 
-	private DisplayPanel DisplayPanel { get; set; }
-	public override void Render(GameObject go, Panel panel)
+	public DisplayPanel DisplayPanel { get; private set; }
+	public override void Render(Panel panel)
 	{
-		DisplayPanel = go.GetOrAddComponent<DisplayPanel>();
-	    DisplayPanel.Panel.Parent = panel;
+        if (DisplayPanel == null) {
+		    DisplayPanel = new DisplayPanel();
+            Assert.NotNull(panel);
+	        DisplayPanel.Parent = panel;
+            DisplayPanel.Style.FontSize = 12;
+            DisplayPanel.Style.Height = Length.Percent(130f);
+        }
+
 	    DisplayPanel.Value = $"on {Reference?.Target ?? "null"}";
-        DisplayPanel.Panel.Style.FontSize = 12;
-        DisplayPanel.Panel.Style.Height = Length.Percent(130f);
 	}
 
 	public override void Evaluate() {

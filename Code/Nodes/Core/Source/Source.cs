@@ -1,17 +1,13 @@
 namespace Nodebox.Nodes;
 
 
-[RegisterNode]
-[Hidden]
+[Register(typeof(Library.All))]
+[Description("Continuously reads a property")]
+[Tag("Core")]
+[Reader]
+[Initialized]
 public class Source<T> : Node
 {
-    public override Type[] Generics => [typeof(T)];
-
-    public override bool Tick => true;
-    public override string Name => "Source";
-    public override string Desc => "Continuously reads a property";
-    public override string[] Groups => new string[] { "Core" };
-
 	public override (Pin[] In, Pin[] Out) InitialPins => (
         new Pin[] {
         },
@@ -37,13 +33,17 @@ public class Source<T> : Node
 
     public Reference Reference { get; set; }
 
-	private DisplayPanel DisplayPanel { get; set; }
-	public override void Render(GameObject go, Panel panel) {
-		DisplayPanel = go.GetOrAddComponent<DisplayPanel>();
-	    DisplayPanel.Panel.Parent = panel;
+	public DisplayPanel DisplayPanel { get; set; }
+	public override void Render(Panel panel) {
+        if (DisplayPanel == null) {
+		    DisplayPanel = new DisplayPanel();
+            Assert.NotNull(panel);
+	        DisplayPanel.Parent = panel;
+            DisplayPanel.Style.FontSize = 12;
+            DisplayPanel.Style.Height = Length.Percent(70f);
+        }
+
 	    DisplayPanel.Value = $"on {Reference?.Target ?? "null"}";
-        DisplayPanel.Panel.Style.FontSize = 12;
-        DisplayPanel.Panel.Style.Height = Length.Percent(70f);
 	}
 
 	public override void Evaluate() {

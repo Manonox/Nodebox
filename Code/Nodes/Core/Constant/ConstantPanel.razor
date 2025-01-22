@@ -1,4 +1,3 @@
-@inherits PanelComponent
 @namespace Nodebox
 
 <root>
@@ -12,7 +11,7 @@
 		<TextEntry
 			Numeric=@true
 			Value=@("0")
-			Placeholder=@(Type.GetPrettyName())
+			Placeholder=@(Type.GetDisplayName())
 			CharacterRegex=@(Type == typeof(int) ? "[0-9\\-]" : null)
 			MaxLength=@(12)
 			@ref="DecimalTextEntry"
@@ -28,7 +27,7 @@
 					class="vector"
 					Numeric=@true
 					Value=@(GetVectorDefault(i))
-					Placeholder=@(VectorType.GetPrettyName())
+					Placeholder=@(VectorType.GetDisplayName())
 					CharacterRegex=@(VectorType == typeof(int) ? "[0-9\\-]" : null)
 					MaxLength=@(12)
 					/>
@@ -54,7 +53,12 @@
 	public delegate void OnChangedEventHandler(ConstantPanel panel);
 	public event OnChangedEventHandler OnChanged;
 
-	protected override void OnTreeFirstBuilt() {
+	protected override void OnAfterTreeRender(bool firstTime) {
+		OnChanged?.Invoke(this);
+		if (!firstTime) {
+			return;
+		}
+
 		Update();
 
 		var onTextEditedHandler = (string s) => {
@@ -76,10 +80,6 @@
 				}
 			}
 		}
-	}
-
-	protected override void OnTreeBuilt() {
-		OnChanged?.Invoke(this);
 	}
 
 	public object _value;

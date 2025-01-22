@@ -1,15 +1,10 @@
 namespace Nodebox.Nodes;
 
-[RegisterNode]
-[Generics(typeof(float))]
-[Generics(typeof(double))]
+[Register(typeof(Library.Float))]
+[Description("Euler's number")]
+[Tag("Math", "Constant")]
 public class E<T> : Node
 {
-	public override Type[] Generics => [typeof(T)];
-
-	public override string Name => $"E<{typeof(T).GetPrettyName()}>";
-    public override string Desc => null;
-    public override string[] Groups => new string[] { "Math", "Constant" };
 	public override Vector2 SizeMultiplier => new(0.75f, 1f);
 
 	public override (Pin[] In, Pin[] Out) InitialPins => (
@@ -34,13 +29,15 @@ public class E<T> : Node
         throw new Exception("wtf");
     }
 
-	private DisplayPanel DisplayPanel { get; set; }
-	public override void Render(GameObject go, Panel panel)
+	public DisplayPanel DisplayPanel { get; private set; }
+	public override void Render(Panel panel)
 	{
-		DisplayPanel = go.GetOrAddComponent<DisplayPanel>();
-        DisplayPanel.Panel.Parent = panel;
+        DisplayPanel ??= new DisplayPanel {
+            Parent = panel,
+            FontSizeOverride = 40f,
+        };
+
         DisplayPanel.Value = "e";
-        DisplayPanel.FontSizeOverride = 40f;
 	}
 }
 

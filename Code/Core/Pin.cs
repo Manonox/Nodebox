@@ -23,4 +23,9 @@ public struct Pin
     }
 
     public static Pin New<T>(string name, string desc = null) => new(typeof(T), name, desc);
+    
+    public readonly Pin WithType(Type type) => new(type, Name, Desc);
+    public readonly Pin WithName(string name) => new(Type, name, Desc);
+
+	public override readonly string ToString() => $"Pin<{Type.GetDisplayName()}>(\"{Name}\")";
 }

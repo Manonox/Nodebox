@@ -1,4 +1,3 @@
-@inherits PanelComponent
 @namespace Nodebox
 
 <root>
@@ -21,7 +20,7 @@
 
 	public Panel Label { get; set; }
 
-	protected override void OnTreeBuilt() {
+	protected override void OnAfterTreeRender(bool firstTime) {
 		if (FontSizeOverride.HasValue) {
 			Label.Style.FontSize = FontSizeOverride.Value;
 			return;

@@ -1,21 +1,34 @@
+
 namespace Nodebox.Nodes;
 
-[RegisterNode]
-[Generics(typeof(Vector2))]
-[Generics(typeof(Vector3))]
-[Generics(typeof(Vector4))]
-[Generics(typeof(Vector2Int))]
-[Generics(typeof(Vector3Int))]
-public class Swizzle<T> : Node
+
+[Register(typeof(Library.Vector))]
+[Description("Switches around component positions in a given vector")]
+[Tag("Math", "Vector")]
+[Polymorphic(true)]
+public class Swizzle : Node
 {
-	public override Type[] Generics => [typeof(T)];
-    
-    public override string Name => $"Swizzle<{typeof(T).GetPrettyName()}>";
-    public override string Desc => "Switches around component positions in a given vector";
-    public override string[] Groups => new string[] { "Math", "Vector" };
 	public override Vector2 SizeMultiplier => new(0.66f, 1f);
+    
+	public override (Pin[] In, Pin[] Out) InitialPins => (
+        new Pin[] {
+            Pin.New<Polymorphic>("V"),
+        },
+        
+        []
+    );
+
+	public override Node Polymorph(PinWireChange change) =>
+        PolymorphHelpers.ToConnectedTypeIfRegistered(typeof(Swizzle<>), change);
+}
 
 
+[Register(typeof(Library.Vector))]
+[Description("Switches around component positions in a given vector")]
+[Tag("Math", "Vector")]
+[Polymorphic(typeof(Swizzle))]
+public class Swizzle<T> : Swizzle
+{
     const string LETTERS = "XYZW";
     private static Type VectorBaseType => typeof(T).GetVectorBaseType();
     private static int VectorTypeDimensions => typeof(T).GetVectorTypeDimensions();
@@ -51,6 +64,9 @@ public class Swizzle<T> : Node
             outputPins
         );
     } }
+    
+	public override Node Polymorph(PinWireChange change) =>
+        PolymorphHelpers.ToNonGenericIfAllDisconnected<Swizzle>(change);
 
     private static int GetPermutationCount(int? n = null) {
         n ??= VectorTypeDimensions;

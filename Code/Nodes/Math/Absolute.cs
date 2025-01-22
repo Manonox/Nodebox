@@ -1,31 +1,40 @@
+
 namespace Nodebox.Nodes;
 
-[RegisterNode]
-[Generics(typeof(float))]
-[Generics(typeof(double))]
-[Generics(typeof(int))]
-// [Generics(typeof(long))]
-[Generics(typeof(Vector2))]
-[Generics(typeof(Vector3))]
-[Generics(typeof(Vector4))]
-[Generics(typeof(Color))]
-// [Generics(typeof(Vector2Int))]
-// [Generics(typeof(Vector3Int))]
-public class Absolute<T> : Node
+[Register]
+[Description("Returns the absolute value of a number (turns negative into positive)\n**Does the same component-wise for vectors**")]
+[Tag("Math")]
+[Polymorphic(true)]
+public class Absolute : Node
 {
-	public override Type[] Generics => [typeof(T)];
-    
-    public override string Name => $"Absolute<{typeof(T).GetPrettyName()}>";
-    public override string Desc => "Returns the absolute value of a number (turns negative into positive)\n**Does the same component-wise for vectors**";
-    public override string[] Groups => new string[] { "Math" };
+    public override (Pin[] In, Pin[] Out) InitialPins => (
+        new Pin[] {
+            Pin.New<Polymorphic>("X"),
+        },
+        
+        new Pin[] {
+            Pin.New<Polymorphic>("|X|")
+        }
+    );
 
+	public override Node Polymorph(PinWireChange change) =>
+        PolymorphHelpers.ToConnectedTypeIfRegistered(typeof(Absolute<>), change);
+}
+
+[Register(typeof(Library.Integer))]
+[Register(typeof(Library.Float))]
+[Register(typeof(Library.Vector))]
+[Register(typeof(Color))]
+[Polymorphic(typeof(Absolute))]
+public class Absolute<T> : Absolute
+{
     public override (Pin[] In, Pin[] Out) InitialPins => (
         new Pin[] {
             Pin.New<T>("X"),
         },
         
         new Pin[] {
-            Pin.New<T>(!typeof(T).IsVectorType() ? "|X|" : "Positive X")
+            Pin.New<T>(!typeof(T).IsVectorType() ? "|X|" : "Abs(X)")
         }
     );
 
@@ -42,6 +51,16 @@ public class Absolute<T> : Node
 
         if (typeof(T) == typeof(int)) {
             SetOutput(0, Math.Abs(GetInput<int>(0)));
+            return;
+        }
+        
+        if (typeof(T) == typeof(byte)) {
+            SetOutput(0, Math.Abs(GetInput<byte>(0)));
+            return;
+        }
+
+        if (typeof(T) == typeof(char)) {
+            SetOutput(0, Math.Abs(GetInput<char>(0)));
             return;
         }
 
@@ -64,10 +83,6 @@ public class Absolute<T> : Node
             SetOutput(0, GetInput<Vector4>(0).Abs());
             return;
         }
-        if (typeof(T) == typeof(Color)) {
-            SetOutput(0, GetInput<Color>(0).Abs());
-            return;
-        }
         
         if (typeof(T) == typeof(Vector2Int)) {
             SetOutput(0, GetInput<Vector2Int>(0).Abs());
@@ -86,5 +101,8 @@ public class Absolute<T> : Node
 
         throw new NotImplementedException();
     }
+
+	public override Node Polymorph(PinWireChange change) =>
+        PolymorphHelpers.ToNonGenericIfAllDisconnected<Absolute>(change);
 }
 

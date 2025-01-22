@@ -1,35 +1,36 @@
 namespace Nodebox.Nodes;
 
-[RegisterNode]
-[Generics(typeof(float))]
-[Generics(typeof(double))]
-[Generics(typeof(int))]
-//[Generics(typeof(long))]
-[Generics(typeof(Vector2))]
-[Generics(typeof(Vector3))]
-[Generics(typeof(Vector4))]
-[Generics(typeof(Vector2Int))]
-[Generics(typeof(Vector3Int))]
-[Generics(typeof(Color))]
-public class Clamp<T> : Node
-{
-	public override Type[] Generics => [typeof(T)];
-    
-    public override string Name => $"Clamp<{typeof(T).GetPrettyName()}>";
-    public override string Desc => null;
-    public override string[] Groups => new string[] { "Math" };
 
+[Register]
+[Tag("Math")]
+[Polymorphic(true)]
+public class Clamp : Node
+{
     public override (Pin[] In, Pin[] Out) InitialPins => (
         new Pin[] {
-            Pin.New<T>("X"),
-            Pin.New<T>("Min"),
-            Pin.New<T>("Max"),
+            Pin.New<Polymorphic>("X"),
+            Pin.New<Polymorphic>("Min"),
+            Pin.New<Polymorphic>("Max"),
         },
         
         new Pin[] {
-            Pin.New<T>("Clamped X")
+            Pin.New<Polymorphic>("Clamped X")
         }
     );
+
+	public override Node Polymorph(PinWireChange change) =>
+        PolymorphHelpers.ToConnectedTypeIfRegistered(typeof(Clamp<>), change);
+}
+
+
+[Register(typeof(Library.Integer))]
+[Register(typeof(Library.Float))]
+[Register(typeof(Library.Vector))]
+[Register(typeof(Color))]
+[Polymorphic(typeof(Clamp))]
+public class Clamp<T> : Clamp
+{
+    public override (Pin[] In, Pin[] Out) InitialPins => base.InitialPins.SubstitutePolymorphic<T>();
 
     public override void Evaluate() {
         if (typeof(T) == typeof(float)) {
@@ -74,4 +75,7 @@ public class Clamp<T> : Node
 
         throw new NotImplementedException();
     }
+
+	public override Node Polymorph(PinWireChange change) =>
+        PolymorphHelpers.ToNonGenericIfAllDisconnected<Clamp>(change);
 }

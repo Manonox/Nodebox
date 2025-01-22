@@ -1,21 +1,9 @@
+using Nodebox.Util;
+
 namespace Nodebox.Nodes;
 
-[RegisterNode]
-[Generics(typeof(float))]
-[Generics(typeof(double))]
-[Generics(typeof(Vector2))]
-[Generics(typeof(Vector3))]
-[Generics(typeof(Vector4))]
-public class Lerp<T> : Node
-{
-	public override Type[] Generics => [typeof(T)];
-    
-    public override string Name => $"Lerp<{typeof(T).GetPrettyName()}>";
-    public override string Desc => null;
-    public override string[] Groups => new string[] { "Math" };
-    public override string[] Aliases => new string[] { "Interpolate", "Interpolation" };
-
-    public override (Pin[] In, Pin[] Out) InitialPins => (
+internal static class LerpHelpers {
+    public static (Pin[] In, Pin[] Out) InitialPinsEx<T>() => (
         new Pin[] {
             Pin.New<T>("From"),
             Pin.New<T>("To"),
@@ -27,76 +15,107 @@ public class Lerp<T> : Node
         }
     );
 
-    public override void Evaluate() {
+    public static void EvaluateEx<T>(Node self, bool clamped) {
         if (typeof(T) == typeof(float)) {
-            SetOutput(0, GetInput<float>(0).LerpTo(GetInput<float>(1), GetInput<float>(2)));
+            self.SetOutput(0, self.GetInput<float>(0).LerpTo(self.GetInput<float>(1), self.GetInput<float>(2), clamped));
             return;
         }
         
         if (typeof(T) == typeof(double)) {
-            SetOutput(0, GetInput<double>(0).LerpTo(GetInput<double>(1), GetInput<double>(2)));
+            self.SetOutput(0, self.GetInput<double>(0).LerpTo(self.GetInput<double>(1), self.GetInput<double>(2), clamped));
             return;
         }
 
         if (typeof(T) == typeof(Vector2)) {
-            SetOutput(0, GetInput<Vector2>(0).LerpTo(GetInput<Vector2>(1), GetInput<float>(2)));
+            self.SetOutput(0, self.GetInput<Vector2>(0).LerpTo(self.GetInput<Vector2>(1), self.GetInput<float>(2), clamped));
             return;
         }
 
         if (typeof(T) == typeof(Vector3)) {
-            SetOutput(0, GetInput<Vector3>(0).LerpTo(GetInput<Vector3>(1), GetInput<float>(2)));
+            self.SetOutput(0, self.GetInput<Vector3>(0).LerpTo(self.GetInput<Vector3>(1), self.GetInput<float>(2), clamped));
             return;
         }
         
         if (typeof(T) == typeof(Vector4)) {
-            SetOutput(0, GetInput<Vector4>(0).LerpTo(GetInput<Vector4>(1), GetInput<float>(2)));
+            self.SetOutput(0, self.GetInput<Vector4>(0).LerpTo(self.GetInput<Vector4>(1), self.GetInput<float>(2), clamped));
             return;
         }
 
+
+        if (typeof(T) == typeof(Rotation)) {
+            self.SetOutput(0, self.GetInput<Rotation>(0).LerpTo(self.GetInput<Rotation>(1), self.GetInput<float>(2), clamped));
+        }
+        
+
+        if (typeof(T) == typeof(Color)) {
+            self.SetOutput(0, self.GetInput<Color>(0).LerpTo(self.GetInput<Color>(1), self.GetInput<float>(2), clamped));
+        }
+
+
         throw new NotImplementedException();
+    }
+
+    public static Node PolymorphEx(PinWireChange change, bool clamped) {
+        if (change.PolymorphTargetType == null) {
+            return null;
+        }
+
+        var target = clamped ? typeof(Lerp<>) : typeof(LerpUnclamped<>);
+        if (change.PinIndex == 2) {
+            if (change.PolymorphTargetType == typeof(double)) {
+                return PolymorphHelpers.ToType(target, typeof(double));
+            }
+
+            return null;
+        }
+
+        return PolymorphHelpers.ToConnectedTypeIfRegistered(target, change);
     }
 }
 
 
-[RegisterNode]
-[Generics(typeof(float))]
-[Generics(typeof(double))]
-[Generics(typeof(Vector2))]
-[Generics(typeof(Vector3))]
-[Generics(typeof(Vector4))]
-public class LerpUnclamped<T> : Lerp<T>
+[Register]
+[Tag("Math")]
+[Alias("Interpolate", "Interpolation")]
+[Polymorphic(true)]
+public class Lerp : Node
 {
-    public override string Name => $"LerpUnclamped<{typeof(T).GetPrettyName()}>";
+    public override (Pin[] In, Pin[] Out) InitialPins => LerpHelpers.InitialPinsEx<Polymorphic>();
+	public override Node Polymorph(PinWireChange change) => LerpHelpers.PolymorphEx(change, true);
+}
 
-    public override void Evaluate() {
-        if (typeof(T) == typeof(float)) {
-            SetOutput(0, GetInput<float>(0).LerpTo(GetInput<float>(1), GetInput<float>(2), false));
-            return;
-        }
-        
-        if (typeof(T) == typeof(double)) {
-            SetOutput(0, GetInput<double>(0).LerpTo(GetInput<double>(1), GetInput<double>(2), false));
-            return;
-        }
-
-        if (typeof(T) == typeof(Vector2)) {
-            SetOutput(0, GetInput<Vector2>(0).LerpTo(GetInput<Vector2>(1), GetInput<float>(2), false));
-            return;
-        }
-
-        if (typeof(T) == typeof(Vector3)) {
-            SetOutput(0, GetInput<Vector3>(0).LerpTo(GetInput<Vector3>(1), GetInput<float>(2), false));
-            return;
-        }
-        
-        if (typeof(T) == typeof(Vector4)) {
-            SetOutput(0, GetInput<Vector4>(0).LerpTo(GetInput<Vector4>(1), GetInput<float>(2), false));
-            return;
-        }
-
-        throw new NotImplementedException();
-    }
+[Register(typeof(Library.FloatN))]
+[Register(typeof(Rotation))]
+[Register(typeof(Color))]
+[Polymorphic(typeof(Lerp))]
+public class Lerp<T> : Lerp
+{
+    public override (Pin[] In, Pin[] Out) InitialPins => LerpHelpers.InitialPinsEx<T>();
+	public override void Evaluate() => LerpHelpers.EvaluateEx<T>(this, true);
+	public override Node Polymorph(PinWireChange change) =>
+        PolymorphHelpers.ToNonGenericIfAllDisconnected<Lerp>(change);
 }
 
 
 
+[Register]
+[Tag("Math")]
+[Alias("InterpolateClamped", "InterpolationClamped")]
+[Polymorphic(true)]
+public class LerpUnclamped : Lerp
+{
+	public override Node Polymorph(PinWireChange change) => LerpHelpers.PolymorphEx(change, false);
+}
+
+
+[Register(typeof(Library.FloatN))]
+[Register(typeof(Rotation))]
+[Register(typeof(Color))]
+[Polymorphic(typeof(LerpUnclamped))]
+public class LerpUnclamped<T> : LerpUnclamped
+{
+    public override (Pin[] In, Pin[] Out) InitialPins => LerpHelpers.InitialPinsEx<T>();
+	public override void Evaluate() => LerpHelpers.EvaluateEx<T>(this, false);
+	public override Node Polymorph(PinWireChange change) =>
+        PolymorphHelpers.ToNonGenericIfAllDisconnected<LerpUnclamped>(change);
+}

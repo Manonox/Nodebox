@@ -27,7 +27,7 @@
 		</div>
 	</div>
 	<div id="footer">
-		<div id="groups">@GroupsText</div>
+		<div id="groups">@TagsText</div>
 	</div>
 </root>
 
@@ -50,7 +50,10 @@
 		foreach (var item in GetAllPinButtons()) {
 			var (pinButton, pin, _, index) = item;
 			pinButton.Index = index;
-			pinButton.Style.BackgroundColor = pin.GetColor();
+			var color = pin.GetColor();
+			if (Node.IsPolymorphic && pin.Type == typeof(object))
+				color = Color.Gray;
+			pinButton.Style.BackgroundColor = color;
 		}
 	}
 
@@ -76,6 +79,6 @@
 
 	public IEnumerable<(PinButton PinButton, Pin Pin, PinType PinType, int Index)> GetAllPinButtons() => GetPinButtons(true).Concat(GetPinButtons());
 
-	public string GroupsText => string.Join(", ", Node.Groups);
+	public string TagsText => string.Join(", ", Node.Tags.Select(x => char.ToUpper(x[0]) + x.Substring(1)));
 	protected override int BuildHash() => System.HashCode.Combine( Node );
 }

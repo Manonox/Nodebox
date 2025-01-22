@@ -1,28 +1,32 @@
+
 namespace Nodebox.Nodes;
 
-[RegisterNode]
-[Generics(typeof(float))]
-[Generics(typeof(double))]
-[Generics(typeof(Vector2))]
-[Generics(typeof(Vector3))]
-[Generics(typeof(Vector4))]
-public class Floor<T> : Node
-{
-	public override Type[] Generics => [typeof(T)];
-    
-    public override string Name => $"Floor<{typeof(T).GetPrettyName()}>";
-    public override string Desc => "Rounds the value down";
-    public override string[] Groups => new string[] { "Math" };
 
+[Register]
+[Description("Rounds the value down")]
+[Tag("Math")]
+[Polymorphic(true)]
+public class Floor : Node
+{
     public override (Pin[] In, Pin[] Out) InitialPins => (
         new Pin[] {
-            Pin.New<T>("A"),
+            Pin.New<Polymorphic>("A"),
         },
         
         new Pin[] {
-            Pin.New<T>("⌊A⌋")
+            Pin.New<Polymorphic>("⌊A⌋")
         }
     );
+
+	public override Node Polymorph(PinWireChange change) =>
+        PolymorphHelpers.ToConnectedTypeIfRegistered(typeof(Floor<>), change);
+}
+
+[Register(typeof(Library.FloatN))]
+[Polymorphic(typeof(Floor))]
+public class Floor<T> : Floor
+{
+    public override (Pin[] In, Pin[] Out) InitialPins => base.InitialPins.SubstitutePolymorphic<T>();
 
     public override void Evaluate() {
         if (typeof(T) == typeof(float)) {
@@ -52,5 +56,8 @@ public class Floor<T> : Node
 
         throw new NotImplementedException();
     }
+
+	public override Node Polymorph(PinWireChange change) =>
+        PolymorphHelpers.ToNonGenericIfAllDisconnected<Floor>(change);
 }
 

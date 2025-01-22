@@ -2,16 +2,18 @@ using Nodebox.Util;
 
 namespace Nodebox.Nodes;
 
+
 [Register]
-[Description("Convert radians to degrees")]
+[Description("Gets the difference between 2 angles in degrees (not `Angles`)")]
 [Tag("Math", "Trigonometry")]
-[Alias("Rad2Deg", "RadiansToDegrees", "Radians2Degrees", "RadianToDegree", "Radian2Degree")]
+[Alias("DifferenceAngles", "DifferenceDegrees")]
 [Polymorphic(true)]
-public class RadToDeg : Node
+public class DeltaDeg : Node
 {
     public override (Pin[] In, Pin[] Out) InitialPins => (
         new Pin[] {
-            Pin.New<Polymorphic>("Radians"),
+            Pin.New<Polymorphic>("From"),
+            Pin.New<Polymorphic>("To"),
         },
         
         new Pin[] {
@@ -20,30 +22,28 @@ public class RadToDeg : Node
     );
 
 	public override Node Polymorph(PinWireChange change) =>
-        PolymorphHelpers.ToConnectedTypeIfRegistered(typeof(RadToDeg<>), change);
+        PolymorphHelpers.ToConnectedTypeIfRegistered(typeof(DeltaDeg<>), change);
 }
 
-
 [Register(typeof(Library.Float))]
-[Polymorphic(typeof(RadToDeg))]
-public class RadToDeg<T> : RadToDeg
+[Polymorphic(typeof(DeltaDeg))]
+public class DeltaDeg<T> : DeltaDeg
 {
     public override (Pin[] In, Pin[] Out) InitialPins => base.InitialPins.SubstitutePolymorphic<T>();
-
     public override void Evaluate() {
         if (typeof(T) == typeof(float)) {
-            SetOutput(0, GetInput<float>(0).RadianToDegree());
+            SetOutput(0, MathX.DeltaDegrees(GetInput<float>(0), GetInput<float>(1)));
             return;
         }
 
         if (typeof(T) == typeof(double)) {
-            SetOutput(0, GetInput<double>(0).RadianToDegree());
+            SetOutput(0, MathOmega.DeltaDegrees(GetInput<double>(0), GetInput<double>(1)));
             return;
         }
 
         throw new NotImplementedException();
     }
 
-    public override Node Polymorph(PinWireChange change) =>
-        PolymorphHelpers.ToNonGenericIfAllDisconnected<RadToDeg>(change);
+	public override Node Polymorph(PinWireChange change) =>
+        PolymorphHelpers.ToNonGenericIfAllDisconnected<DeltaDeg>(change);
 }
